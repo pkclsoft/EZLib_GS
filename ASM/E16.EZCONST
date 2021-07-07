@@ -1,0 +1,263 @@
+;----------------------------------------------------------------------------  
+;                              EZCONST.UNIT                                    
+;                                                                              
+; This unit contains a number of constants for GS/OS that have not been        
+; supplied by APW or ByteWorks.                                                
+;                                                                              
+; Copyright 1989...End Of Time                                                 
+; EZ-Soft                                                                      
+;                                                                              
+; Written by: P.C. Easdown                                                     
+;----------------------------------------------------------------------------  
+
+;  -------------------   File Types   -------------------    
+
+UnknownFileType         gequ $00
+BadBlocksFile           gequ $01
+TextFile                gequ $04
+BinaryFile              gequ $06
+DoubleHIRESFile         gequ $08
+DirectoryFile           gequ $0f
+AppleworksDataBase      gequ $19
+AppleworksWordProcessor gequ $1a
+AppleworksSpreadsheet   gequ $1b
+WordProcessorFile       gequ $50
+SpreadsheetFile         gequ $51
+DataBaseFile            gequ $52
+ObjectOrientedGraphics  gequ $53
+DesktopPublishingFile   gequ $54
+HypermediaFile          gequ $55
+EducationalDataFile     gequ $56
+StationaryFile          gequ $57
+HelpFile                gequ $58
+CommunicationsFile      gequ $59
+ApplicationConfigFile   gequ $5a
+GSBasicProgram          gequ $ab
+GSBasicToolbox          gequ $ac
+GSBasicData             gequ $ad
+SourceFile              gequ $b0
+ObjectFile              gequ $b1
+LibraryFile             gequ $b2
+GSOSApplication         gequ $b3
+GSOSRunTimeLibrary      gequ $b4
+GSOSShellApplication    gequ $b5
+GSOSPermanentInitFile   gequ $b6
+IIGSTemporaryInitFile   gequ $b7
+IIGSNewDeskAccessory    gequ $b8
+ClassicDeskAccessory    gequ $b9
+ToolFile                gequ $ba
+DeviceDriverFile        gequ $bb
+GenericLoadFile         gequ $bc
+FileSystemTranslator    gequ $bd
+IIGSSoundFile           gequ $bf
+IIGSSuperHIRESImageFile gequ $c0
+IIGSSuperHIRESPicture   gequ $c1
+IIGSFontFile            gequ $c8
+FinderDataFile          gequ $c9
+FinderIconFile          gequ $ca
+MusicFile               gequ $d5
+InstrumentFile          gequ $d6
+MIDIFile                gequ $d7
+CommunicationsLibrary   gequ $e0
+AppleTalkFile           gequ $e2
+PascalPartition         gequ $ef
+CommandFile             gequ $f0
+GSOSSystemFile          gequ $f9
+IntegerBasicProgramFile gequ $fa
+IntegerBasicVariables   gequ $fb
+ApplesoftProgramFile    gequ $fc
+ApplesoftVariableFile   gequ $fd
+EDASMRelocatableFile    gequ $fe
+Prodos8Application      gequ $ff
+FileServerType          gequ $0000fff5
+Drive525                gequ $0000fff9
+RamDrive                gequ $0000fffa
+Disk35                  gequ $0000fffb
+Disk525                 gequ $0000fffc
+HardDrive               gequ $0000fffd
+CDRom                   gequ $0000fff8
+
+;  -------------------   Storage Types   -------------------    
+
+StandardFileStorage     gequ $0001
+ExtendedFileStorage     gequ $0005
+DirectoryFileStorage    gequ $000d
+
+;  -------------------   Access Masks   -------------------    
+
+destroyEnableMask       gequ $0080
+renameEnableMask        gequ $0040
+backupNeededMask        gequ $0020
+fileInvisibleMask       gequ $0004
+writeEnableMask         gequ $0002
+readEnableMask          gequ $0001
+
+;  -------------------   Device Control Commands   -------------------    
+
+dcResetDevice           gequ $0000
+dcFormatDevice          gequ $0001
+dcEject                 gequ $0002
+dcSetControlParameters  gequ $0003
+dcSetWaitMode           gequ $0004
+dcSetFormatOption       gequ $0005
+dcAssignPartitionOwner  gequ $0006
+dcARM_EVENT             gequ $0007
+
+;  ----------------   Device Characteristic Masks   ----------------    
+
+dcmRAMROMDiskMask       gequ $8000
+dcmGeneratedDevice      gequ $4000
+dcmDeviceBusy           gequ $1000
+dcmDeviceSpeed          gequ $0300
+dcmBlockDevice          gequ $0080
+dcmWriteEnabled         gequ $0040
+dcmReadEnabled          gequ $0020
+dcmFormatEnabled        gequ $0008
+dcmRemovableMedia       gequ $0004
+
+;  -------------------   Device ID Numbers   -------------------    
+
+DiskII                  gequ $0000
+Profile5Meg             gequ $0001
+Profile10Meg            gequ $0002
+Disk3_5                 gequ $0003
+SCSIGeneric             gequ $0004
+SCSIHardDisk            gequ $0005
+SCSITapeDrive           gequ $0006
+SCSICDRom               gequ $0007
+SCSIPrinter             gequ $0008
+SerialModem             gequ $0009
+ConsoleDriver           gequ $000a
+SerialPrinter           gequ $000b
+SerialLaserWriter       gequ $000c
+AppleTalkLaserWriter    gequ $000d
+RAMDisk                 gequ $000e
+ROMDisk                 gequ $000f
+FileServer              gequ $0010
+IBX                     gequ $0011
+AppleDesktopBus         gequ $0012
+HardDiskGeneric         gequ $0013
+FloppyDiskGeneric       gequ $0014
+TapeDriveGeneric        gequ $0015
+CharacterDeviceGeneric  gequ $0016
+MFMFloppyDisk           gequ $0017
+NetworkGeneric          gequ $0018
+SCSISequentialAccess    gequ $0019
+SCSIScanner             gequ $001a
+OtherScanner            gequ $001b
+LaserWriterSC           gequ $001c
+AppleTalkMainDriver     gequ $001d
+AppleTalkFileServer     gequ $001e
+AppleTalkRPMDriver      gequ $001f
+
+;  -------------------   Device Status Codes   -------------------    
+
+dsDeviceStatus          gequ $0000
+dsControlParameters     gequ $0001
+dsReturnWaitMode        gequ $0002
+dsGetFormatOptions      gequ $0003
+
+;  -------------------   File System IDs   -------------------    
+
+fsProDOS                gequ $0001
+fsSOS                   gequ $0001
+fsDOS3_3                gequ $0002
+fsDOS3_2                gequ $0003
+fsDOS3_1                gequ $0003
+fsAppleIIPascal         gequ $0004
+fsMFS                   gequ $0005
+fsHFS                   gequ $0006
+fsLISA                  gequ $0007
+fsAppleCPM              gequ $0008
+fsCharacter             gequ $0009
+fsMSDOS                 gequ $000a
+fsHighSierra            gequ $000b
+fsISO9660               gequ $000c
+fsAppleShare            gequ $000d
+
+;  -------------------   File Flag Masks   -------------------    
+
+ffExtendedFileMask      gequ $8000
+
+;  -------------------   GetDirEntry Constants   -------------------    
+
+gdeBaseAbsolute         gequ $0000
+gdeBaseAddDisplacement  gequ $0001
+gdeSubtractDisplacement gequ $0002
+
+;  -------------------   Resource Types   -------------------    
+
+rListIcon               gequ $0001
+rListPattern            gequ $0002
+rProductTitle           gequ $0003
+rProductDetails         gequ $0004
+rSerialNumber           gequ $0005
+rPreferences            gequ $0006
+
+;  -------------------   Sprites Constants   -------------------    
+
+MaxSprites      gequ 100       ; Maximum number of sprites per sprite file     
+MaxShapes       gequ 7         ; Number of shapes per sprite                   
+ 
+;  -------------------   Miscellaneous Constants   -------------------    
+
+On              gequ 1         ; Constants useful for the SetRadioButton and   
+Off             gequ 0         ; SetCheckBox routines found in EZCONTROLS.     
+ 
+Return          gequ 13
+ 
+GSOSNameLength  gequ 508       ; Maximum length of GS/OS pathname.             
+
+True            gequ 1
+False           gequ 0
+
+addToEnd        gequ True      ; These two constants are defined for use with   
+addToStart      gequ False     ; EZFixStringToRect to specify where to add      
+;                                the three periods.                             
+
+FileNameLength          gequ   32
+
+lineEditHeight          gequ   11  ; Height in pixels of an lineEdit control.
+ 
+lineEditAllKeys         gequ   0
+lineEditAlphaNumeric    gequ   1
+lineEditAlphabetic      gequ   2
+lineEditNumeric         gequ   3
+lineEditPathname        gequ   4
+
+;  -------------------   Toolbox Numbers   -------------------    
+
+; Toolbox number constants for use in Tool Locator type calls.   
+ 
+ToolLocator     gequ 1
+MemoryManager   gequ 2
+MiscToolSet     gequ 3
+QuickDrawII     gequ 4
+DeskManager     gequ 5
+EventManager    gequ 6
+Scheduler       gequ 7
+SoundToolSet    gequ 8
+ADBToolSet      gequ 9
+SANEToolSet     gequ 10
+IntegerMath     gequ 11
+TextToolSet     gequ 12
+ReservedSet     gequ 13
+WindowManager   gequ 14
+MenuManager     gequ 15
+ControlManager  gequ 16
+SystemLoader    gequ 17
+QuickDrawIIAux  gequ 18
+PrintManager    gequ 19
+LineEditToolSet gequ 20
+DialogManager   gequ 21
+ScrapManager    gequ 22
+StandardFile    gequ 23
+NotAvailable    gequ 24
+NoteSynthesizer gequ 25
+NoteSequencer   gequ 26
+FontManager     gequ 27
+ListManager     gequ 28
+ACEToolSet      gequ 29
+ResourceManager gequ 30
+MIDIToolSet     gequ 31
+TextEdit        gequ 34

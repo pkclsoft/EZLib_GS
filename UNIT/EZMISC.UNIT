@@ -1,0 +1,193 @@
+{----------------------------------------------------------------------------}
+{                              EZMISC.UNIT                                   }
+{                                                                            }
+{ This unit contains all of the constants and types used by both the other   }
+{ EZ Library units, and any applications that in turn use the library.       }
+{                                                                            }
+{ Also supplied within, are several small routines that can make life a      }
+{ easier to the programmer.                                                  }
+{                                                                            }
+{ Copyright 1989...End Of Time                                               }
+{ EZ-Soft                                                                    }
+{                                                                            }
+{ Written by: P.C. Easdown                                                   }
+{----------------------------------------------------------------------------}
+
+{$ keep 'EZMisc' }
+Unit EZMisc;
+
+interface
+
+Uses Common, IntegerMath, MemoryMgr, MenuMgr;
+
+{$ libprefix 'int/' }
+USES EZConst;
+
+Type 
+    { FilenameString is a GSOS output string that can be used for getting     }
+    { filenames from GSOS.  Remember to preset the ILength field with a value }
+    { of 32.                                                                  }
+ 
+    FilenameString      = Record
+                            ILength : Integer;
+                            SLength : Integer;
+                            SText   : packed array [1..FileNameLength] of char;
+                          end;
+ 
+    ConvL2I         = record       { For splitting a longint into 2 integers  }
+                        case Boolean of
+                            True    : (long: longint);
+                            False   : (lsw,msw: Integer);
+                        end;
+ 
+    ConvI2B         = record       { For splitting an integer into 2 bytes    }
+                        case Boolean of
+                            True    : (Int: Integer);
+                            False   : (lsb,msb: Byte);
+                        end;
+ 
+    { Note that the X coordinate only has a range 1 thru 8, as there are two  }
+    { pixels in each byte.                                                    }
+ 
+    GridType        = Record
+                        Grid : Array [1..20,1..10] of Byte;
+                      end;
+    GridTypePtr     = ^GridType;
+ 
+    SpriteType      = Record
+                        NumOfShapes : Integer;
+                        Shape       : Array [1..MaxShapes] of GridTypePtr;
+                      end;
+ 
+    SpriteFType     = Record
+                        PaletteRec   : ColorTable;
+                        NumOfSprites : Integer;
+                        Sprite       : Array [1..MaxSprites] of SpriteType;
+                      end;
+ 
+    Variants        = (Palette, Int, Image);
+ 
+    SpriteRecord    = Record
+                        Case kind : Variants of
+                            Palette : (ColorPalette : ColorTable);
+                            Int     : (Number       : Integer);
+                            Image   : (Grid         : GridType);
+                        end;
+ 
+    patternHandle   =   ^patternPtr;
+
+
+{----------------------------------------------------------------------------}
+{ Hex  A procedure to convert a long integer to a hexadecimal pascal string, }
+{ ~~~  with the number of digits specified by Digits.                        }
+{----------------------------------------------------------------------------}
+
+Procedure Hex(    DecValue  : LongInt;
+                  Digits    : Integer;
+              var OutString : pString);
+
+{----------------------------------------------------------------------------}
+{ RIndex  A function similar to POS, except that it searches the string in a }
+{ ~~~~~~  reverse manner, and only searches for an occurence of one          }
+{ character.                                                                 }
+{----------------------------------------------------------------------------}
+
+Function RIndex(InString   : pSTring;
+                InChar     : char)     : integer;
+
+{----------------------------------------------------------------------------}
+{ EZNew  A function similar to the pascal function "new" which will allocate }
+{ ~~~~~  a block of memory containing the specified number of bytes.  It     }
+{        returns a pointer to the allocated memory block, or Nil if the      }
+{        block of memory was unavailable.  This routine has been supplied,   }
+{        since the "new" function does not seem to work within an NDA.       }
+{                                                                            }
+{ inSize - Is a long integer specifying the number of bytes the memory block }
+{          is to contain.                                                    }
+{----------------------------------------------------------------------------}
+
+Function EZNew(inSize   : longint) : Ptr;
+
+Procedure FixUserId; extern;
+
+Procedure FixToolError(InError   : Integer); extern;
+
+Function EZBuffer(var bufferSize :   longint;
+                      maxSize    :   longint;
+                      chunkSize  :   longint) : handle;
+
+implementation
+
+Procedure Hex;
+begin
+    Long2Hex(DecValue, @OutString[1], Digits);
+    OutString[0] := chr(Digits);
+end;
+
+Function RIndex;
+var
+    i : integer;
+begin
+    i := length(InString);
+ 
+    while (InString[i] <> InChar) and (i <> 0) do
+        i := i - 1;
+ 
+    RIndex := i;
+end;
+
+Function EZNew;
+var
+    tmpHandle : handle;
+begin
+    tmpHandle := NewHandle(inSize,
+                           UserID,
+                           $c018,           { % 1100 0000 0001 1000 }
+                           Nil);
+
+    EZNew := tmpHandle^;
+end;
+
+Function EZBuffer;
+var
+    GSOSHandle  :   handle;
+    tempHandle  :   handle;
+    minSize     :   longint;
+begin
+    minSize := bufferSize;
+    bufferSize := maxSize;
+    CompactMem;
+
+    GSOSHandle := NewHandle(ord4(32768), userID,        { keep 32K for gsos }
+                            attrLocked  + attrFixed +
+                            attrNoPurge, Nil);
+
+    tempHandle := NewHandle(bufferSize, userID,
+                            attrLocked  + attrFixed +
+                            attrNoPurge, Nil);
+
+    While (ToolError <> 0) and
+          (bufferSize >= minSize) do
+    begin
+        bufferSize := bufferSize - chunkSize;
+
+        tempHandle := NewHandle(bufferSize, userID,
+                                attrLocked  + attrFixed +
+                                attrNoPurge, Nil);
+    end;
+
+    If (ToolError <> 0) or
+       (bufferSize < minSize) then
+    begin
+        If ToolError = 0 then
+            DisposeHandle(tempHandle);
+
+        tempHandle := Nil;
+    end;
+
+    DisposeHandle(GSOSHandle);
+
+    EZBuffer := tempHandle;
+end;
+
+end.

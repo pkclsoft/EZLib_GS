@@ -1,0 +1,155 @@
+{----------------------------------------------------------------------------}
+{                              EZCRYPT.UNIT                                  }
+{                                                                            }
+{ This unit contains a number of routine used for encrypting a range of      }
+{ memory, and decrypting the same.                                           }
+{                                                                            }
+{ Copyright 1989...End Of Time                                               }
+{ EZ-Soft                                                                    }
+{                                                                            }
+{ Written by: P.C. Easdown                                                   }
+{----------------------------------------------------------------------------}
+
+{$ keep 'EZCrypt' }
+Unit EZCrypt;
+
+interface
+
+Uses Common, IntegerMath;
+
+Procedure EZCrypt(    theBuffer       :   ptr;
+                      bufferLength    :   longint;
+                  var theKey          :   pString);
+
+Procedure EZCreateSerialNumber(    productCode      :   pString;
+                                   keyWord          :   pString;
+                                   serialNumber     :   Longint;
+                               var theSerialNumber  :   pString);
+
+Function EZSerialNumberOk(    productCode      :   pString;
+                              keyWord          :   pString;
+                          var theSerialNumber  :   pString) : Boolean;
+
+implementation
+
+Procedure EZCrypt;
+var
+    keyChar     :   integer;
+    localBuffer :   ^char;
+begin
+    keyChar := 1;
+    localBuffer := pointer(theBuffer);
+
+    while bufferLength > 0 do
+    begin
+        if keyChar > length(theKey) then
+            keyChar := 1;
+
+        localBuffer^ := chr(ord(localBuffer^) ! ord(theKey[keyChar]));
+
+        localBuffer := pointer(ord4(localBuffer) + ord4(1));
+
+        bufferLength := bufferLength - 1;
+        keyChar := keyChar + 1;
+    end;
+end;
+
+Procedure EZCreateSerialNumber;
+var
+    digit           :   Integer;
+    one,two,three   :   Integer;
+begin
+    Long2Dec(serialNumber, @theSerialNumber[1], 8, False);
+    theSerialNumber[0] := chr(8);
+
+    digit := 1;
+    while digit < 9 do
+    begin
+        if not (theSerialNumber[digit] in ['0'..'9']) then
+            theSerialNumber[digit] := '0';
+        digit := digit + 1;
+    end;
+
+    insert(productCode, theSerialNumber, 1);
+
+    EZCrypt(@theSerialNumber[0], 12, keyWord);
+
+    one := ord(theSerialNumber[0]) + ord(theSerialNumber[3]) +
+           ord(theSerialNumber[6]) + ord(theSerialNumber[9]);
+
+    two := ord(theSerialNumber[1]) + ord(theSerialNumber[4]) +
+           ord(theSerialNumber[7]) + ord(theSerialNumber[10]);
+
+    three := ord(theSerialNumber[2]) + ord(theSerialNumber[5]) +
+             ord(theSerialNumber[8]) + ord(theSerialNumber[11]);
+
+    one := one mod 256;
+    two := two mod 256;
+    three := three mod 256;
+
+    theSerialNumber[12] := chr(one);
+    theSerialNumber[13] := chr(two);
+    theSerialNumber[14] := chr(three);
+end;
+
+Function EZSerialNumberOk;
+var
+    serialNumberOk  :   Boolean;
+    digit           :   Integer;
+    one,two,three   :   Integer;
+begin
+    one := ord(theSerialNumber[0]) + ord(theSerialNumber[3]) +
+           ord(theSerialNumber[6]) + ord(theSerialNumber[9]);
+
+    two := ord(theSerialNumber[1]) + ord(theSerialNumber[4]) +
+           ord(theSerialNumber[7]) + ord(theSerialNumber[10]);
+
+    three := ord(theSerialNumber[2]) + ord(theSerialNumber[5]) +
+             ord(theSerialNumber[8]) + ord(theSerialNumber[11]);
+
+    one := one mod 256;
+    two := two mod 256;
+    three := three mod 256;
+
+    If (theSerialNumber[12] = chr(one)) and
+       (theSerialNumber[13] = chr(two)) and
+       (theSerialNumber[14] = chr(three))
+    then
+        begin
+            EZCrypt(@theSerialNumber[0], 12, keyWord);
+
+            If theSerialNumber[0] = chr(11)
+            then
+                begin
+                    If (theSerialNumber[1] = productCode[1]) and
+                       (theSerialNumber[2] = productCode[2]) and
+                       (theSerialNumber[3] = productCode[3])
+                    then
+                        begin
+                            delete(theSerialNumber,1,3);
+
+                            digit := 1;
+
+                            serialNumberOk := True;
+
+                            while digit < 9 do
+                            begin
+                                If not (theSerialNumber[digit] in ['0'..'9']) then
+                                    serialNumberOk := False;
+
+                                digit := digit + 1;
+                            end;
+                        end
+                    else
+                        serialNumberOk := False;
+                end
+            else
+                serialNumberOk := False;
+        end
+    else
+        serialNumberOk := False;
+
+    EZSerialNumberOk := serialNumberOk;
+end;
+
+end.

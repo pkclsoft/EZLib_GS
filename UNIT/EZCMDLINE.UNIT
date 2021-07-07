@@ -1,0 +1,135 @@
+{$ keep 'EZCmdLine' }
+UNIT EZCmdLine;
+
+INTERFACE
+
+USES Common, OrcaShell;
+
+{$ libprefix 'int/' }
+USES EZString;
+
+PROCEDURE getWord(VAR line  : pString;
+                      start : INTEGER;
+                  VAR value : pString);
+(*
+  OPERATION:
+    Will extract and return the Word in the input line beginning at
+    the character pointed to by 'start'.
+*)
+
+FUNCTION switchPresent(VAR line:    pString;
+                           switch:  pString): BOOLEAN;
+(*
+  OPERATION:
+    Returns a boolean value indicating whether the specified switch
+    is present in the command line.
+*)
+
+PROCEDURE deleteWord(VAR line   :   pString;
+                         start  :   INTEGER);
+(*
+  OPERATION:
+    Delete's the Word begiining at the character specified by 'start' from
+    the input line.
+*)
+
+PROCEDURE deleteSwitch(VAR line:    pString;
+                           switch:  pString);
+(*
+  OPERATION:
+    Deletes the specified switch from the command line.
+*)
+
+PROCEDURE getSwitchValue(VAR line:      pString;
+                             switch:    pString;
+                         VAR value:     pString);
+(*
+  OPERATION:
+    For a switch that also has a parameter, this procedure will return
+    the value of the parameter, and will then delete the switch and it's
+    parameter from the command line.
+*)
+
+FUNCTION UserAborted:   BOOLEAN;
+(*
+  OPERATION:
+    Does a shell call to determine whether the user has pressed
+    command-period, and returns true if so.
+*)
+
+IMPLEMENTATION
+
+CONST
+  space = 32;
+
+PROCEDURE getWord;
+VAR
+  count   :   integer;
+BEGIN
+  IF start <= LENGTH(line) THEN BEGIN
+    count := start;
+
+    WHILE (line[count] = CHR(space)) AND
+          (LENGTH(line) > 0) DO BEGIN
+      DELETE(line, count, 1);
+    END;
+
+    WHILE (line[count] <> CHR(space)) AND
+          (count <= LENGTH(line)) DO BEGIN
+      count := SUCC(count);
+    END;
+
+    count := count - start;
+    value := COPY(line, start, count);
+    DELETE(line, start, (count + 1));
+    trimString(line);
+  END ELSE BEGIN
+    value := '';
+  END;
+END (* getWord *);
+
+FUNCTION switchPresent;
+BEGIN
+  IF POS(switch, line) <> 0 THEN BEGIN
+    switchPresent := TRUE
+  END ELSE BEGIN
+    switchPresent := FALSE;
+  END;
+END (* switchPresent *);
+
+PROCEDURE deleteWord;
+VAR
+  dummyWord:  pString;
+BEGIN
+  getWord(line, start, dummyWord);
+END (* deleteWord *);
+
+PROCEDURE deleteSwitch;
+BEGIN
+  deleteWord(line, POS(switch, line));
+  trimString(line);
+END (* deleteSwitch *);
+
+PROCEDURE getSwitchValue;
+VAR
+  switchPosition: INTEGER;
+BEGIN
+  switchPosition := POS(switch, line);
+  deleteSwitch(line, switch);
+  getWord(line, switchPosition, value);
+END (* getSwitchValue *);
+
+FUNCTION UserAborted;
+VAR
+  stopParms:    stopDCB;
+BEGIN
+  stop(stopParms);
+
+  IF stopParms.stopFlag THEN BEGIN
+    UserAborted := TRUE;
+  END ELSE BEGIN
+    UserAborted := FALSE;
+  END;
+END (* UserAborted *);
+
+END (* EZCmdLine *).

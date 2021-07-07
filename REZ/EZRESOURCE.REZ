@@ -1,0 +1,783 @@
+#include "EZTypes.rez"
+
+    /* ------------------   File Type Icons   ------------------ */
+
+resource rListIcon (DirectoryFile+1, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload)  {
+            0x0001,
+            0x000a,
+            0x0008,
+            $"00000000"
+            $"00000000"
+            $"0FFF0000"
+            $"F000FFFF"
+            $"F000000F"
+            $"F000000F"
+            $"F000000F"
+            $"FFFFFFFF"
+            $"00000000"
+            $"00000000",
+
+            $"00000000"
+            $"00000000"
+            $"0FFF0000"
+            $"F000FFFF"
+            $"F000000F"
+            $"F000000F"
+            $"F000000F"
+            $"FFFFFFFF"
+            $"00000000"
+            $"00000000"
+};
+
+resource rListIcon (UnknownFileType+1, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload)  {
+            0x0001,
+            0x000a,
+            0x0008,
+            $"00000000"
+            $"FFFFFF00"
+            $"F000F0F0"
+            $"F000FFFF"
+            $"F000000F"
+            $"F000000F"
+            $"F000000F"
+            $"F000000F"
+            $"FFFFFFFF"
+            $"00000000",
+
+            $"00000000"
+            $"FFFFFF00"
+            $"F000F0F0"
+            $"F000FFFF"
+            $"F000000F"
+            $"F000000F"
+            $"F000000F"
+            $"F000000F"
+            $"FFFFFFFF"
+            $"00000000"
+};
+
+resource rListIcon (Disk35+1, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload)  {
+            0x0001,
+            0x000a,
+            0x0008,
+            $"00000000"
+            $"FFFFFFFF"
+            $"F0F00F0F"
+            $"F0F00F0F"
+            $"F0FFFF0F"
+            $"F000000F"
+            $"F0FFFF0F"
+            $"F0F0FF0F"
+            $"0FFFFFFF"
+            $"00000000",
+
+            $"00000000"
+            $"FFFFFFFF"
+            $"F0F00F0F"
+            $"F0F00F0F"
+            $"F0FFFF0F"
+            $"F000000F"
+            $"F0FFFF0F"
+            $"F0F0FF0F"
+            $"0FFFFFFF"
+            $"00000000"
+};
+
+resource rListIcon (Drive525+1, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload)  {
+            0x0001,
+            0x000a,
+            0x0008,
+            $"00000000"
+            $"00000000"
+            $"00000000"
+            $"00000000"
+            $"FFFFFFFF"
+            $"FCCCCCCF"
+            $"FCFFFFCF"
+            $"FCCCCCCF"
+            $"FFFFFFFF"
+            $"00000000",
+
+            $"00000000"
+            $"00000000"
+            $"00000000"
+            $"00000000"
+            $"FFFFFFFF"
+            $"FCCCCCCF"
+            $"FCFFFFCF"
+            $"FCCCCCCF"
+            $"FFFFFFFF"
+            $"00000000"
+};
+
+resource rListIcon (Disk525+1, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload)  {
+            0x0001,
+            0x000a,
+            0x0008,
+            $"00000000"
+            $"FFFFFFFF"
+            $"F000000F"
+            $"F00FF0CC"
+            $"F00FF00F"
+            $"F000000F"
+            $"F00CC00F"
+            $"F00CC00F"
+            $"FFFFFFFF"
+            $"00000000",
+
+            $"00000000"
+            $"FFFFFFFF"
+            $"F000000F"
+            $"F00FF0CC"
+            $"F00FF00F"
+            $"F000000F"
+            $"F00CC00F"
+            $"F00CC00F"
+            $"FFFFFFFF"
+            $"00000000"
+};
+
+resource rListIcon (RAMDrive+1, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload)  {
+            0x0001,
+            0x000a,
+            0x0008,
+            $"00000000"
+            $"00000000"
+            $"00000000"
+            $"00000000"
+            $"0FFFFFFF"
+            $"F555555F"
+            $"F555555F"
+            $"FFFFFFFF"
+            $"00000999"
+            $"00000000",
+
+            $"00000000"
+            $"00000000"
+            $"00000000"
+            $"00000000"
+            $"0FFFFFFF"
+            $"F555555F"
+            $"F555555F"
+            $"FFFFFFFF"
+            $"00000999"
+            $"00000000"
+};
+
+resource rListIcon (HardDrive+1, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload)  {
+            0x0001,
+            0x000a,
+            0x0008,
+            $"00000000"
+            $"00000000"
+            $"00000000"
+            $"00000000"
+            $"00000000"
+            $"FFFFFFFF"
+            $"FCCCCBCF"
+            $"FCCCCCCF"
+            $"FFFFFFFF"
+            $"00000000",
+
+            $"00000000"
+            $"00000000"
+            $"00000000"
+            $"00000000"
+            $"00000000"
+            $"FFFFFFFF"
+            $"FCCCCBCF"
+            $"FCCCCCCF"
+            $"FFFFFFFF"
+            $"00000000"
+};
+
+resource rListIcon (FileServerType+1, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload) {
+            0x0001,
+            0x000a,
+            0x0008,
+            $"00000000"
+            $"0000FFF0"
+            $"0FF0F0FF"
+            $"F00FF00F"
+            $"F000F00F"
+            $"FFFFFFFF"
+            $"00000F00"
+            $"00000F00"
+            $"FFFFFFFF"
+            $"00000000",
+
+            $"00000000"
+            $"0000FFF0"
+            $"0FF0F0FF"
+            $"F00FF00F"
+            $"F000F00F"
+            $"FFFFFFFF"
+            $"00000F00"
+            $"00000F00"
+            $"FFFFFFFF"
+            $"00000000"
+};
+
+resource rListIcon (GSOSApplication+1, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload) {
+            0x0001,
+            0x000a,
+            0x0008,
+            $"00000000"
+            $"000F0000"
+            $"00F3F000"
+            $"0F300F00"
+            $"F30033FF"
+            $"0F3FF0FF"
+            $"00F03FFF"
+            $"000F0000"
+            $"00000000"
+            $"00000000",
+
+            $"00000000"
+            $"000F0000"
+            $"00F3F000"
+            $"0F300F00"
+            $"F30033FF"
+            $"0F3FF0FF"
+            $"00F03FFF"
+            $"000F0000"
+            $"00000000"
+            $"00000000"
+};
+
+resource rListIcon (Prodos8Application+1, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload) {
+            0x0001,
+            0x000a,
+            0x0008,
+            $"00000000"
+            $"000F0000"
+            $"00F3F000"
+            $"0F300F00"
+            $"F30033FF"
+            $"0F3FF0FF"
+            $"00F03FFF"
+            $"000F0000"
+            $"00000000"
+            $"00000000",
+
+            $"00000000"
+            $"000F0000"
+            $"00F3F000"
+            $"0F300F00"
+            $"F30033FF"
+            $"0F3FF0FF"
+            $"00F03FFF"
+            $"000F0000"
+            $"00000000"
+            $"00000000"
+};
+
+resource rListIcon (CDRom+1, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload) {
+            0x0000,
+            0x000a,
+            0x0008,
+            $"00000000"
+            $"000FF000"
+            $"0FFCCFF0"
+            $"FCCCCCCF"
+            $"FCCFFCCF"
+            $"FCCFFCCF"
+            $"FCCCCCCF"
+            $"0FFCCFF0"
+            $"000FF000"
+            $"00000000",
+
+            $"00000000"
+            $"000FF000"
+            $"0FFCCFF0"
+            $"FCCCCCCF"
+            $"FCCFFCCF"
+            $"FCCFFCCF"
+            $"FCCCCCCF"
+            $"0FFCCFF0"
+            $"000FF000"
+            $"00000000"
+};
+
+resource rListPattern (1, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload) {
+
+            $"3333cccc"
+            $"3333cccc"
+            $"3333cccc"
+            $"3333cccc"
+            $"3333cccc"
+            $"3333cccc"
+            $"3333cccc"
+            $"3333cccc"
+};
+
+resource rListPattern (2, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload) {
+            $"44444444"
+            $"44444444"
+            $"44444444"
+            $"44444444"
+            $"44444444"
+            $"44444444"
+            $"44444444"
+            $"44444444"
+};
+
+resource rListPattern (3, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload) {
+            $"EEEEEEEE"
+            $"EEEEEEEE"
+            $"EEEEEEEE"
+            $"EEEEEEEE"
+            $"EEEEEEEE"
+            $"EEEEEEEE"
+            $"EEEEEEEE"
+            $"EEEEEEEE"
+};
+
+resource rIcon (CautionIcon, noSpecialMemory,
+                                            locked,
+                                            fixed,
+                                            nonpurgeable,
+                                            preload) {
+            0x0000,
+            0x00012,
+            0x00014,
+            $"FFFFFFFC00003FFFFFFF"
+            $"FFFFFFC0000003FFFFFF"
+            $"FFFFFF003FFC00FFFFFF"
+            $"FFFFFC00FFFF003FFFFF"
+            $"FFFFF003F00FC00FFFFF"
+            $"FFFFC00FC003F003FFFF"
+            $"FFFF003FC003FC00FFFF"
+            $"FFFC00FFC003FF003FFF"
+            $"FFF003FFC003FFC003FF"
+            $"FFC00FFFF00FFFF003FF"
+            $"FF003FFFF00FFFFC00FF"
+            $"FC00FFFFFC3FFFFF003F"
+            $"F003FFFFFFFFFFFFC00F"
+            $"C00FFFFFF00FFFFFF003"
+            $"003FFFFFF00FFFFFFC00"
+            $"00FFFFFFFFFFFFFFFF00"
+            $"00000000000000000000"
+            $"C0000000000000000003",
+
+            $"FFFFFFFC00003FFFFFFF"
+            $"FFFFFFC0000003FFFFFF"
+            $"FFFFFF003FFC00FFFFFF"
+            $"FFFFFC00FFFF003FFFFF"
+            $"FFFFF003F00FC00FFFFF"
+            $"FFFFC00FC003F003FFFF"
+            $"FFFF003FC003FC00FFFF"
+            $"FFFC00FFC003FF003FFF"
+            $"FFF003FFC003FFC003FF"
+            $"FFC00FFFF00FFFF003FF"
+            $"FF003FFFF00FFFFC00FF"
+            $"FC00FFFFFC3FFFFF003F"
+            $"F003FFFFFFFFFFFFC00F"
+            $"C00FFFFFF00FFFFFF003"
+            $"003FFFFFF00FFFFFFC00"
+            $"00FFFFFFFFFFFFFFFF00"
+            $"00000000000000000000"
+            $"C0000000000000000003"
+};
+
+resource rPString (0x1, locked, preload, nocrossbank, nospecialmemory) {
+	"Disk II (140k)"
+};
+
+resource rPString (0x2, locked, preload, nocrossbank, nospecialmemory) {
+	"Profile (5 Meg)"
+};
+
+resource rPString (0x3, locked, preload, nocrossbank, nospecialmemory) {
+	"Profile (10 Meg)"
+};
+
+resource rPString (0x4, locked, preload, nocrossbank, nospecialmemory) {
+	"Disk 3.5 (800k)"
+};
+
+resource rPString (0x5, locked, preload, nocrossbank, nospecialmemory) {
+	"SCSI Device (Generic)"
+};
+
+resource rPString (0x6, locked, preload, nocrossbank, nospecialmemory) {
+	"SCSI Hard disk"
+};
+
+resource rPString (0x7, locked, preload, nocrossbank, nospecialmemory) {
+	"SCSI Tape drive"
+};
+
+resource rPString (0x8, locked, preload, nocrossbank, nospecialmemory) {
+	"SCSI CD Rom"
+};
+
+resource rPString (0x9, locked, preload, nocrossbank, nospecialmemory) {
+	"SCSI Printer"
+};
+
+resource rPString (0xa, locked, preload, nocrossbank, nospecialmemory) {
+	"Serial Modem"
+};
+
+resource rPString (0xb, locked, preload, nocrossbank, nospecialmemory) {
+	"Console Driver"
+};
+
+resource rPString (0xc, locked, preload, nocrossbank, nospecialmemory) {
+	"Serial Printer"
+};
+
+resource rPString (0xd, locked, preload, nocrossbank, nospecialmemory) {
+	"Serial Laser Printer"
+};
+
+resource rPString (0xe, locked, preload, nocrossbank, nospecialmemory) {
+	"Appletalk Laser Printer"
+};
+
+resource rPString (0xf, locked, preload, nocrossbank, nospecialmemory) {
+	"RAM Disk"
+};
+
+resource rPString (0x10, locked, preload, nocrossbank, nospecialmemory) {
+	"ROM Disk"
+};
+
+resource rPString (0x11, locked, preload, nocrossbank, nospecialmemory) {
+	"File Server"
+};
+
+resource rPString (0x12, locked, preload, nocrossbank, nospecialmemory) {
+	"IBX"
+};
+
+resource rPString (0x13, locked, preload, nocrossbank, nospecialmemory) {
+	"Apple desktop BUS"
+};
+
+resource rPString (0x14, locked, preload, nocrossbank, nospecialmemory) {
+	"Hard Disk (generic)"
+};
+
+resource rPString (0x15, locked, preload, nocrossbank, nospecialmemory) {
+	"Floppy disk (generic)"
+};
+
+resource rPString (0x16, locked, preload, nocrossbank, nospecialmemory) {
+	"Tape drive (generic)"
+};
+
+resource rPString (0x17, locked, preload, nocrossbank, nospecialmemory) {
+	"Character Device (generic)"
+};
+
+resource rPString (0x18, locked, preload, nocrossbank, nospecialmemory) {
+	"MFM Floopy Disk"
+};
+
+resource rPString (0x19, locked, preload, nocrossbank, nospecialmemory) {
+	"Network (generic)"
+};
+
+resource rPString (0x1a, locked, preload, nocrossbank, nospecialmemory) {
+	"SCSI Sequential Access Device"
+};
+
+resource rPString (0x1b, locked, preload, nocrossbank, nospecialmemory) {
+	"SCSI Scanner"
+};
+
+resource rPString (0x1c, locked, preload, nocrossbank, nospecialmemory) {
+	"Unknown Scanner"
+};
+
+resource rPString (0x1d, locked, preload, nocrossbank, nospecialmemory) {
+	"Laser Writer SC"
+};
+
+resource rPString (0x1e, locked, preload, nocrossbank, nospecialmemory) {
+	"Appletalk main driver"
+};
+
+resource rPString (0x1f, locked, preload, nocrossbank, nospecialmemory) {
+	"Appletalk File Server"
+};
+
+resource rPString (0x20, locked, preload, nocrossbank, nospecialmemory) {
+	"Appletalk RPM Driver"
+};
+
+resource rPString (0x0001+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Bad GS/OS call number"
+};
+
+resource rPString (0x0004+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Parameter count out of range"
+};
+
+resource rPString (0x0007+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "GS/OS is busy"
+};
+
+resource rPString (0x0010+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Device not found"
+};
+
+resource rPString (0x0011+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Invalid device number"
+};
+
+resource rPString (0x0020+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Invalid request"
+};
+
+resource rPString (0x0021+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Invalid control or status code"
+};
+
+resource rPString (0x0022+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Invalid parameter"
+};
+
+resource rPString (0x0023+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Character device not open"
+};
+
+resource rPString (0x0024+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Character device already open"
+};
+
+resource rPString (0x0025+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Interrupt vector table full"
+};
+
+resource rPString (0x0026+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Resource not available"
+};
+
+resource rPString (0x0027+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "I/O error"
+};
+
+resource rPString (0x0028+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "No device connected"
+};
+
+resource rPString (0x0029+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Device is busy"
+};
+
+resource rPString (0x002b+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Disk is write protected"
+};
+
+resource rPString (0x002c+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Invalid byte count"
+};
+
+resource rPString (0x002d+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Invalid block number"
+};
+
+resource rPString (0x002e+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Disk switched"
+};
+
+resource rPString (0x002f+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Device off-line"
+};
+
+resource rPString (0x0040+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Invalid pathname syntax"
+};
+
+resource rPString (0x0043+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Invalid reference number"
+};
+
+resource rPString (0x0044+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Path not found"
+};
+
+resource rPString (0x0045+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Volume not found"
+};
+
+resource rPString (0x0046+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "File not found"
+};
+
+resource rPString (0x0047+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Duplicate pathname"
+};
+
+resource rPString (0x0048+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Volume full"
+};
+
+resource rPString (0x0049+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Volume directory full"
+};
+
+resource rPString (0x004a+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Version error"
+};
+
+resource rPString (0x004b+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Unsupported storage type"
+};
+
+resource rPString (0x004c+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "EOF encountered"
+};
+
+resource rPString (0x004d+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Position out of range"
+};
+
+resource rPString (0x004e+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Invalid access"
+};
+
+resource rPString (0x004f+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Buffer too small"
+};
+
+resource rPString (0x0050+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "File is busy"
+};
+
+resource rPString (0x0051+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Directory error"
+};
+
+resource rPString (0x0052+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Unsupported volume type"
+};
+
+resource rPString (0x0053+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Invalid parameter"
+};
+
+resource rPString (0x0054+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Out of memory"
+};
+
+resource rPString (0x0057+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Duplicate volume"
+};
+
+resource rPString (0x0058+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Not a block device"
+};
+
+resource rPString (0x0059+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Invalid file level"
+};
+
+resource rPString (0x005a+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Block number out of range"
+};
+
+resource rPString (0x005b+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Invalid path names"
+};
+
+resource rPString (0x005c+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Not a system file"
+};
+
+resource rPString (0x005d+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "File system not supported"
+};
+
+resource rPString (0x005f+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Stack overflow"
+};
+
+resource rPString (0x0060+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Data is unavailable"
+};
+
+resource rPString (0x0061+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "End of directory"
+};
+
+resource rPString (0x0062+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Invalid class"
+};
+
+resource rPString (0x0063+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Resource fork not found"
+};
+
+resource rPString (0x0067+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Duplicate device name"
+};
+
+resource rPString (0x0070+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Resource fork already exists"
+};
+
+resource rPString (0x0071+0x0200, locked, preload, nocrossbank, nospecialmemory) {
+        "Can't add resource fork"
+};
+
+

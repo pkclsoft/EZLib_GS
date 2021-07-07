@@ -1,0 +1,269 @@
+ MACRO
+&lab _BeginUpdate
+&lab ldx #$1E0E
+ jsl $E10000
+ MEND
+ MACRO
+&lab _EndUpdate
+&lab ldx #$1F0E
+ jsl $E10000
+ MEND
+ MACRO
+&lab _GetContentDraw
+&lab ldx #$480E
+ jsl $E10000
+ MEND
+ MACRO
+&lab pushlong &addr,&offset
+&lab ANOP
+ LCLC &C
+ LCLC &REST
+&C AMID &addr,1,1
+ AIF "&C"="#",.immediate
+ AIF "&C"="[",.zeropage
+ AIF C:&offset=0,.nooffset
+ AIF "&offset"="s",.stack
+ pushword &addr+2,&offset
+ pushword &addr,&offset
+ MEXIT
+.nooffset
+ pushword &addr+2
+ pushword &addr
+ MEXIT
+.immediate
+&REST AMID &addr,2,L:&addr-1
+ dc I1'$F4',I2'(&REST)|-16'
+ dc I1'$F4',I2'&REST'
+ MEXIT
+.stack
+ pushword &addr+2,s
+ pushword &addr+2,s
+ MEXIT
+.zeropage
+ ldy #&offset+2
+ pushword &addr,y
+ ldy #&offset
+ pushword &addr,y
+ MEND
+ MACRO
+&lab pushword &SYSOPR
+&lab ANOP
+ AIF C:&SYSOPR=0,.b
+ LCLC &C
+&C AMID "&SYSOPR",1,1
+ AIF ("&C"="#").AND.(S:LONGA),.immediate
+ lda &SYSOPR
+ pha
+ MEXIT
+.b
+ pha
+ MEXIT
+.immediate
+ LCLC &REST
+ LCLA &BL
+&BL ASEARCH "&SYSOPR"," ",1
+ AIF &BL>0,.a
+&BL SETA L:&SYSOPR+1
+.a
+&REST AMID "&SYSOPR",2,&BL-2
+ dc I1'$F4',I2'&REST'
+ MEND
+ MACRO
+&lab longm
+&lab ANOP
+ rep #%00100000
+ longa on
+ MEND
+ MACRO
+&lab shortm
+&lab ANOP
+ sep #%00100000
+ longa off
+ MEND
+ MACRO
+&lab _LoadResource
+&lab ldx #$0E1E
+ jsl $E10000
+ MEND
+ MACRO
+&lab _DrawChar
+&lab ldx #$A404
+ jsl $E10000
+ MEND
+ MACRO
+&lab _DrawString
+&lab ldx #$A504
+ jsl $E10000
+ MEND
+ MACRO
+&lab _GetBackColor
+&lab ldx #$A304
+ jsl $E10000
+ MEND
+ MACRO
+&lab _GetForeColor
+&lab ldx #$A104
+ jsl $E10000
+ MEND
+ MACRO
+&lab _GetMasterSCB
+&lab ldx #$1704
+ jsl $E10000
+ MEND
+ MACRO
+&lab _GetPenMode
+&lab ldx #$2F04
+ jsl $E10000
+ MEND
+ MACRO
+&lab _GetTextMode
+&lab ldx #$9D04
+ jsl $E10000
+ MEND
+ MACRO
+&lab _MoveTo
+&lab ldx #$3A04
+ jsl $E10000
+ MEND
+ MACRO
+&lab _PaintRect
+&lab ldx #$5404
+ jsl $E10000
+ MEND
+ MACRO
+&lab _SetBackColor
+&lab ldx #$A204
+ jsl $E10000
+ MEND
+ MACRO
+&lab _SetForeColor
+&lab ldx #$A004
+ jsl $E10000
+ MEND
+ MACRO
+&lab _SetPenMode
+&lab ldx #$2E04
+ jsl $E10000
+ MEND
+ MACRO
+&lab _SetPenPat
+&lab ldx #$3004
+ jsl $E10000
+ MEND
+ MACRO
+&lab _SetPort
+&lab ldx #$1B04
+ jsl $E10000
+ MEND
+ MACRO
+&lab _SetSolidPenPat
+&lab ldx #$3704
+ jsl $E10000
+ MEND
+ MACRO
+&lab _SetTextMode
+&lab ldx #$9C04
+ jsl $E10000
+ MEND
+ MACRO
+&lab _DrawIcon
+&lab ldx #$0B12
+ jsl $E10000
+ MEND
+ MACRO
+&lab _MMStartUp
+&lab ldx #$0202
+ jsl $E10000
+ MEND
+ MACRO
+&lab subroutine &parms,&work
+&lab anop
+ aif c:&work,.a
+ lclc &work
+&work setc 0
+.a
+ gbla &totallen
+ gbla &worklen
+&worklen seta &work
+&totallen seta 0
+ aif c:&parms=0,.e
+ lclc &len
+ lclc &p
+ lcla &i
+&i seta c:&parms
+.b
+&p setc &parms(&i)
+&len amid &p,2,1
+ aif "&len"=":",.c
+&len amid &p,1,2
+&p amid &p,4,l:&p-3
+ ago .d
+.c
+&len amid &p,1,1
+&p amid &p,3,l:&p-2
+.d
+&p equ &totallen+3+&work
+&totallen seta &totallen+&len
+&i seta &i-1
+ aif &i,^b
+.e
+ tsc
+ sec
+ sbc #&work
+ tcs
+ inc a
+ phd
+ tcd
+ mend
+ MACRO
+&lab return &r
+&lab anop
+ lclc &len
+ aif c:&r,.a
+ lclc &r
+&r setc 0
+&len setc 0
+ ago .h
+.a
+&len amid &r,2,1
+ aif "&len"=":",.b
+&len amid &r,1,2
+&r amid &r,4,l:&r-3
+ ago .c
+.b
+&len amid &r,1,1
+&r amid &r,3,l:&r-2
+.c
+ aif &len<>2,.d
+ ldy &r
+ ago .h
+.d
+ aif &len<>4,.e
+ ldx &r+2
+ ldy &r
+ ago .h
+.e
+ aif &len<>10,.g
+ ldy #&r
+ ldx #^&r
+ ago .h
+.g
+ mnote 'Not a valid return length',16
+ mexit
+.h
+ aif &totallen=0,.i
+ lda &worklen+1
+ sta &worklen+&totallen+1
+ lda &worklen
+ sta &worklen+&totallen
+.i
+ pld
+ tsc
+ clc
+ adc #&worklen+&totallen
+ tcs
+ aif &len=0,.j
+ tya
+.j
+ rtl
+ mend

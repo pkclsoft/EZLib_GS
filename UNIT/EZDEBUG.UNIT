@@ -1,0 +1,47 @@
+{----------------------------------------------------------------------------}
+{                              EZDEBUG.UNIT                                  }
+{                                                                            }
+{ This unit contains a number of definitions for use with GSBug.             }
+{                                                                            }
+{ Copyright 1989...End Of Time                                               }
+{ EZ-Soft                                                                    }
+{                                                                            }
+{ Written by: P.C. Easdown                                                   }
+{----------------------------------------------------------------------------}
+
+{$ keep 'EZDebug' }
+Unit EZDebug;
+
+interface
+
+Uses Common;
+
+Procedure DebugStr(theString    :   pString); tool ($09, $ff);
+
+Procedure SetMileStone(theString    :   pString); tool ($0a, $ff);
+
+Procedure EZInitDebugFile;
+
+Procedure EZNextDebugFile;
+
+implementation
+
+var
+    DebugFile               : Text;
+    DFNum                   : integer;
+    hexval                  : pString;
+
+Procedure EZInitDebugFile;
+begin
+    DFNum := 1;
+    rewrite(debugfile, '1:dfile.1');
+end;
+
+Procedure EZNextDebugFile;
+begin
+    close(DebugFile);
+    DFNum := DFNum + 1;
+    rewrite(DebugFile, concat('1:DFILE.',cnvis(DFNum)));
+end;
+
+end.

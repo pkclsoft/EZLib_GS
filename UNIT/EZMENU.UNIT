@@ -1,0 +1,372 @@
+{----------------------------------------------------------------------------}
+{                               EZMENU.UNIT                                  }
+{                                                                            }
+{ This unit contains a number of tool related routines that can make life    }
+{ much easier on the application, in that they take care of the creation and }
+{ building of the new menu manager templates.                                }
+{                                                                            }
+{ Copyright 1989...End Of Time                                               }
+{ EZ-Soft                                                                    }
+{                                                                            }
+{ Written by: P.C. Easdown                                                   }
+{----------------------------------------------------------------------------}
+
+{$ keep 'EZMenu' }
+Unit EZMenu;
+
+interface
+
+Uses Common, QuickDrawII, ControlMgr, WindowMgr, ListMgr, lineEdit,
+     MenuMgr, ToolLocator, MemoryMgr;
+
+{$ libprefix 'int/' }
+USES EZConst, EZMisc;
+
+TYPE
+    menuItemTemplatePtr = ^menuItemTemplate;
+
+    dirMenuTemplate  = record
+                         version        : integer;
+                         menuID         : integer;
+                         menuFlag       : integer;
+                         menuTitleRef   : ptr;
+                         itemRefs       : array [0..29] of ptr;
+                         terminator     : ptr;
+                       end;
+    dirMenuTemplatePtr = ^dirMenuTemplate;
+
+    popupCtlRec = record
+                    ctlNext      : ctlRecHndl;
+                    ctlOwner     : grafPortPtr;
+                    ctlRect      : rect;
+                    ctlFlag      : byte;
+                    ctlHilite    : byte;
+                    ctlValue     : integer;
+                    ctlProc      : procPtr;
+                    ctlAction    : procPtr;
+                    ctlData      : longint;
+                    ctlRefCon    : longint;
+                    ctlColor     : colorTblPtr;
+                    ctlMenuRef   : menuHandle;
+                    ctlMenuEnd   : longint;
+                    ctlpopupRect : rect;
+                    ctlID        : longint;
+                    ctlMoreFlags : integer;
+                    ctlVersion   : integer;
+                    ctlTitleWdth : integer;
+                 end;
+    popupCtlRecPtr = ^popupCtlRec;
+    popupCtlRecHndl = ^popupCtlRecPtr;
+   
+{----------------------------------------------------------------------------}
+{ newMenuItemTemplate  This function will allocate memory in which to place  }
+{ ~~~~~~~~~~~~~~~~~~~  one of the new menu item templates, and will set it   }
+{                      up based upon the input parameters.                   }
+{                                                                            }
+{ inID        - The menu item ID.                                            }
+{ inPrimary   - The primary keystroke equivalence character.                 }
+{ inSecondary - The secondary keystroke equivalence character.               }
+{ inCheckItem - The character to use for checked items.                      }
+{ inFlags     - The flags word for the menu item.                            }
+{ inTitle     - The reference to the item title string.                      }
+{----------------------------------------------------------------------------}
+
+Function newMenuItemTemplate(inID           : integer;
+                             inPrimary      : integer;
+                             inSecondary    : integer;
+                             inCheckItem    : integer;
+                             inFlags        : integer;
+                             inTitle        : pString) : ptr;
+
+{----------------------------------------------------------------------------}
+{ newMenuTemplate  Similar to newMenuItemTemplate, except that it create a   }
+{ ~~~~~~~~~~~~~~~  menu template, rather than a menu item template.          }
+{                                                                            }
+{ inID          - This is the menu ID.                                       }
+{ inFlags       - The menu flags word.                                       }
+{ inMenuTitle   - Reference to the menu title.                               }
+{----------------------------------------------------------------------------}
+
+Function newMenuTemplate(inID          : integer;
+                         inFlags       : integer;
+                         inMenuTitle   : ptr) : ptr;
+
+{----------------------------------------------------------------------------}
+{ EZNewDirectoryMenu   This function takes the input pathname, and produces  }
+{ ~~~~~~~~~~~~~~~~~~   a menu template with no title that is intended for    }
+{                      use as a popup menu.  Each item of the menu contains  }
+{                      a directory name, with the first item containing the  }
+{                      first directory name, and so on.                      }
+{                                                                            }
+{                      Note that each menu item will be 32 characters in     }
+{                      length, thus allowing for network supplied names.     }
+{                                                                            }
+{ inPathName   - Is the full pathname to be used in generating the menu.     }
+{ inMenuID     - Is the menu ID.  Menu items will begin at inMenuID + 1 and  }
+{                increment by one with each item.                            }
+{ inSelectItem - Is the item in the menu is to be selected initially.        }
+{----------------------------------------------------------------------------}
+
+Function EZNewDirectoryMenu(    inPathname      : GSOSInString;
+                                inID            : integer;
+                            var inSelectItem    : integer) : ptr;
+
+{----------------------------------------------------------------------------}
+{ EZUpdateDirectoryMenu This function takes the input pathname, and produces }
+{ ~~~~~~~~~~~~~~~~~~~~~ a menu template with no title that is intended for   }
+{                       use as a popup menu.  Each item of the menu contains }
+{                       a directory name, with the first item containing the }
+{                       first directory name, and so on.                     }
+{                                                                            }
+{                       Note that each menu item will be 32 characters in    }
+{                       length, thus allowing for network supplied names.    }
+{                                                                            }
+{                       This routine differs from EZNewDirectoryMenu in that }
+{                       it takes a pointer to an already existing menu as a  }
+{                       parameter and does not create it from scratch.  It   }
+{                       simply overwrites the current menu items.            }
+{                                                                            }
+{ inPathName   - Is the full pathname to be used in generating the menu.     }
+{ inMenu       - Is the menu template pointer returned by EZNewDirectoryMenu }
+{----------------------------------------------------------------------------}
+
+Function EZUpdateDirectoryMenu(inPathName     : GSOSInString;
+                               inMenu         : Ptr) : integer;
+
+
+{----------------------------------------------------------------------------}
+{ EZGetMenuPAth This procedure will take the item ID of a popup menu control }
+{ ~~~~~~~~~~~~~ and determine its currently selected value.  It will then    }
+{               create a GSOS input string comprising the full pathname of   }
+{               the directory that has been selected.                        }
+{                                                                            }
+{ inID        - Is the control ID of the popup menu.                         }
+{ outPathName - Is the destination of the created pathname.                  }
+{----------------------------------------------------------------------------}
+
+Procedure EZGetMenuPath(inID              : longint;
+                        var outPathName   : GSOSInString);
+
+{----------------------------------------------------------------------------}
+{ EZDisposePopUp  This procedure will dispose from the heap, any memory that }
+{ ~~~~~~~~~~~~~~  was allocated when the specified popup menu was last       }
+{                 updated.  This is done automatically when updating the     }
+{                 contents of the popup, but should be done manually by the  }
+{                 application when it is finished with the popup altogether. }
+{                                                                            }
+{ inMenu      - Is a pointer to the main popup menu record.                  }
+{----------------------------------------------------------------------------}
+
+Procedure EZDisposePopUp(inMenu : ptr);
+
+implementation
+
+Function newMenuItemTemplate;
+var
+    localMenuItem   : menuItemTemplatePtr;
+    tmpString       : pStringPtr;
+begin
+    { localMenuItem := menuItemTemplatePtr(EZNew(14)); }
+    new(localMenuItem);
+
+    new(tmpString);
+    tmpString^ := '';
+
+    tmpString^ := copy(inTitle, 1, length(inTitle));
+
+    with localMenuItem^ do
+    begin
+        version := 0;
+        itemID  := inID;
+        itemChar := ConvI2B(inPrimary).lsb;
+        itemAltChar := ConvI2B(inSecondary).lsb;
+        itemCheck := inCheckItem;
+        itemFlag := inFlags;
+        itemTitleRef := longint(tmpString);
+    end;
+
+    newMenuItemTemplate := ptr(localMenuItem); 
+end;
+
+Function newMenuTemplate;
+var
+    localMenu        : dirMenuTemplatePtr;
+    count            : integer;
+begin
+    { localMenu := dirMenuTemplatePtr(EZNew(134)); }
+    new(localMenu);
+
+    with localMenu^ do
+    begin
+        version := 0;
+        menuID := inID;
+        menuFlag := inFlags;
+        menuTitleRef := inMenuTitle;
+
+        For count := 0 to 29 do
+            itemRefs[count] := Nil;
+    end;        
+
+    newMenuTemplate := ptr(localMenu);
+end;
+
+Function EZSetupDirectoryMenu(    inPathname    : GSOSInString;
+                                  inID          : integer;
+                              var inMenu        : dirMenuTemplatePtr) : integer;
+var
+    TmpString        : pathName;
+    dirName          : pString;
+    count            : integer;
+    menuItemNumber   : integer;
+    menuRefNumber    : integer;
+    nullChar         : integer;
+    checkChar        : integer;
+begin
+    nullChar := 0;
+    checkChar := 0;
+   
+    If inPathName.theString[1] = Separator then
+        TmpString := copy(inPathName.theString, 2, inPathName.size - 1)
+    else
+        TmpString := copy(inPathName.theString, 1, inPathName.size);
+
+    menuItemNumber := inID + 1;
+
+    while (TmpString <> '') and
+          (menuItemNumber < (inID + 31)) do
+    begin
+        count := pos(Separator, TmpString);
+
+        if count = 0 then
+        begin
+            TmpString := concat(TmpString,Separator);
+            count := pos(Separator, TmpString);
+        end;
+
+        dirName := copy(TmpString, 1, count-1);
+        delete(TmpString,1,count);
+
+        menuRefNumber := menuItemNumber - (inID + 1);
+
+        with inMenu^ do
+        begin
+            itemRefs[menuRefNumber] := newMenuItemTemplate(menuItemNumber,
+                                                           nullChar,
+                                                           nullChar,
+                                                           checkChar,
+                                                           $0000,
+                                                           dirName);
+        end;
+
+        menuItemNumber := menuItemNumber + 1;
+    end;
+
+    EZSetupDirectoryMenu := menuItemNumber - 1;
+end;
+
+Function EZNewDirectoryMenu;
+var
+    localPtr  : Ptr;
+    localMenu : dirMenuTemplatePtr;
+begin
+    localPtr := newMenuTemplate(inID,
+                                $0008, { 0000 0000 0000 1000 }
+                                Nil);
+
+    localMenu := dirMenuTemplatePtr(localPtr);
+
+    inSelectItem := EZSetupDirectoryMenu(inPathName,
+                                         inID,
+                                         localMenu);
+
+    EZNewDirectoryMenu := localPtr;
+end;
+
+Procedure EZDisposeMenuItems(inMenu : dirMenuTemplatePtr);
+var
+    localMenuItem   : menuItemTemplatePtr;
+    count           : integer;
+begin
+    with inMenu^ do
+    begin
+        For count := 0 to 29 do
+        begin
+            if itemRefs[count] <> Nil then
+            begin
+                localMenuItem := menuItemTemplatePtr(itemRefs[count]);
+                dispose(ptr(localMenuItem^.itemTitleRef));
+                dispose(localMenuItem);
+                itemRefs[count] := Nil;
+            end;
+        end;
+    end;
+end;
+
+Procedure EZDisposePopUp;
+var
+    localMenuTemp   : dirMenuTemplatePtr;
+begin
+    localMenuTemp := dirMenuTemplatePtr(inMenu);
+
+    EZDisposeMenuITems(localMenuTemp);
+
+    dispose(localMenuTemp);
+end;
+
+Function EZUpdateDirectoryMenu;
+var
+    localMenuID     : integer;
+    localMenuTemp   : dirMenuTemplatePtr;
+begin
+    localMenuTemp := dirMenuTemplatePtr(inMenu);
+
+    EZDisposeMenuItems(localMenuTemp);
+
+    localMenuID := localMenuTemp^.menuID;
+
+    EZUpdateDirectoryMenu := EZSetupDirectoryMenu(inPathName,
+                                                  localMenuID,
+                                                  localMenuTemp);
+end;
+
+Procedure EZGetMenuPath;
+var
+    menuCtl         : ctlRecHndl;
+    selectedItem    : integer;
+    tmpString       : pStringPtr;
+    popupPtr        : popupCtlRecPtr;
+    menuTemp        : dirMenuTemplatePtr;
+    itemPtr         : cStringPtr;
+    namelen         : integer;
+begin
+    menuCtl := GetCtlHandleFromID(Nil, inID);
+    SetMenuBar(menuCtl);    { Look at the correct menu bar }
+
+    outPathName.theString := '';
+    outPathName.size := 0;
+
+    popupPtr := popupCtlRecPtr(menuCtl^);
+
+    with popupPtr^, outPathName  do
+    begin
+        selectedItem := ctlValue;
+
+        while selectedItem > ctlMenuRef^^.MenuID do
+        begin
+            itemPtr := GetMItem(selectedItem);
+
+            tmpString := pStringPtr(itemPtr);
+
+            theString := concat(Separator,
+                            copy(tmpString^, 1, length(tmpString^)),
+                            theString);
+            size := length(theString);
+
+            selectedItem := selectedItem - 1;
+        end;
+    end;
+
+    SetMenuBar(Nil);  { Revert to the system menu bar }
+end;
+
+end.

@@ -1,0 +1,54 @@
+{----------------------------------------------------------------------------}
+{                               EZLIST.UNIT                                  }
+{                                                                            }
+{ This unit contains a suite of calls that relate to Lists in particular     }
+{ which allow the easy manipulation of the list controls provided by the     }
+{ Control Manager.                                                           }
+{                                                                            }
+{ Copyright 1989...End Of Time                                               }
+{ EZ-Soft                                                                    }
+{                                                                            }
+{ Written by: P.C. Easdown                                                   }
+{----------------------------------------------------------------------------}
+
+{$ Keep 'EZList' }
+Unit EZList;
+
+interface
+
+Uses Common, QuickDrawII, ControlMgr, ListMgr, ResourceMgr, MenuMgr, 
+     ToolLocator;
+
+{$ libprefix 'int/' }
+USES EZConst, EZMisc, EZString;
+
+Const
+    tickMask        =   $00120000;
+    openAppleMask   =   $00110000;
+    closedAppleMask =   $00140000;
+    diamondMask     =   $00130000;
+    deltaMask       =   $00c60000;
+    leftDArrowMask  =   $00c70000;
+    tickChar        =   $12;
+    openAppleChar   =   $11;
+    closedAppleChar =   $14;
+    diamondChar     =   $13;
+    deltaChar       =   $c6;
+    leftDArrowChar  =   $c7;
+
+{----------------------------------------------------------------------------}
+{ EXDrawMember  This routine is supplied for those programmers wanting to    }
+{ ~~~~~~~~~~~~  display file type icons in a list of file names.  To use it  }
+{               simply pass its address into the list manager routines in    }
+{               the drawMember parameter.                                    }
+{----------------------------------------------------------------------------}
+
+{$ ToolParms+    }
+Procedure EZDrawMember(memberRect : rect;
+                       memberPtr  : memRecPtr;
+                       theList    : ctlRecHndl); extern;
+{$ ToolParms-    }
+
+implementation
+
+end.

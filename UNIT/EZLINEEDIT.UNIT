@@ -1,0 +1,118 @@
+{----------------------------------------------------------------------------}
+{                             EZlineEdit.UNIT                                }
+{                                                                            }
+{ This unit contains all calls specific to lineEdit extended controls.  They }
+{ are set up so that it is not necessary to have the handle of the control,  }
+{ rather all is needed is the item number of the control.  These routines do }
+{ all the rest.                                                              }
+{                                                                            }
+{ Copyright 1989...End Of Time                                               }
+{ EZ-Soft                                                                    }
+{                                                                            }
+{ Written by: P.C. Easdown                                                   }
+{----------------------------------------------------------------------------}
+
+{$ keep 'EZlineEdit' }
+Unit EZlineEdit;
+
+interface
+
+uses Common, QuickDrawII, ControlMgr, lineEdit, WindowMgr;
+
+{----------------------------------------------------------------------------}
+{ setlineEditText  This procedure will insert the specified text into an     }
+{ ~~~~~~~~~~~~~~~  extended lineEdit control.                                }
+{                                                                            }
+{ EditText     - A pascal string of up to 255 characters that is to be       }
+{                inserted into the control.                                  }
+{ SelectIt     - A boolean flag, indicating whether the routine is to select }
+{                the text after inserting it.                                }
+{ inID         - An extended control ID, used to specify the control into    }
+{                which the text is to be inserted.                           }
+{----------------------------------------------------------------------------}
+
+Procedure setLineEditText(EditText : pString;
+                          SelectIt : Boolean;
+                          inID     : longint);
+
+{----------------------------------------------------------------------------}
+{ getlineEditText  This procedure obtains the current value of an extended   }
+{ ~~~~~~~~~~~~~~~  lineEdit control.                                         }
+{                                                                            }
+{ inID         - An extended control ID, used to specify the control from    }
+{                which the text is to be obtained.                           }
+{ TextValue    - A pascal string into which the lineEdit value is to be      }
+{                placed.                                                     }
+{----------------------------------------------------------------------------}
+
+Procedure getLineEditText(    inID         : longint;
+                          var TextValue    : pString);
+
+implementation
+
+Procedure setLineEditText;
+var
+    theControl  : ctlRecHndl;   { Will point to the extended control.         }
+    EditLCtl    : leRecHndl;    { Will point to the actual line edit control. }
+                                { We use this for the actual LE calls.        }
+    editCtlRect : rect;         { Will contain the control rect for InvalRect }
+begin
+    { Extended line edit control handles cannot be passed direct to LE calls, }
+    { so it is necessary to get the actual line edit handle from within the   }
+    { extended control record.  Basically, an edit line is not a control, but }
+    { can be used as part of one by the control manager.                      }
+ 
+    theControl := GetCtlHandleFromID(Nil, inID);
+ 
+    if theControl <> Nil then
+    begin
+        EditLCtl := leRecHndl(theControl^^.ctlData);
+ 
+        LESetText(@EditText[1],
+                  length(EditText),
+                  EditLCtl);    { Set the text of the edit line.              }
+ 
+        If SelectIt then        { If told to, then select the entire string.  }
+            LESetSelect(0,
+                        Length(EditText),
+                        EditLCtl);
+ 
+        editCtlRect := theControl^^.ctlRect;
+ 
+        InvalRect(editCtlRect); { Invalidate the edit line control rectangle  }
+                                { so that it will be redrawn.                 }
+    end;
+end;
+
+Procedure getLineEditText;
+type
+    textHandle  = ^textPtr;
+var
+    TextHndl    : textHandle;
+    TextLength  : Integer;
+    theControl  : ctlRecHndl;   { Will point to the extended control.         }
+    EditLCtl    : leRecHndl;    { Will point to the actual line edit control. }
+                                { We use this for the actual LE calls.        }
+begin
+    { Extended line edit control handles cannot be passed direct to LE calls, }
+    { so it is necessary to get the actual line edit handle from within the   }
+    { extended control record.  Basically, an edit line is not a control, but }
+    { can be used as part of one by the control manager.                      }
+ 
+    theControl := GetCtlHandleFromID(Nil, inID);
+ 
+    if theControl <> Nil then
+    begin
+        EditLCtl := leRecHndl(theControl^^.ctlData);
+ 
+        TextHndl := textHandle(LEGetTextHand(EditLCtl));
+            { Get a handle to the text.                                       }
+        TextLength := LEGetTextLen(EditLCtl);
+            { Get its length.                                                 }
+ 
+        TextValue := copy(TextHndl^^, 1, TextLength);
+            { Turn it into a pascal string.                                   }
+    end;
+end;
+
+end.

@@ -1,0 +1,200 @@
+{----------------------------------------------------------------------------}
+{                              EZSTRING.UNIT                                 }
+{                                                                            }
+{ This unit contains routines for the manipulation of strings.               }
+{                                                                            }
+{ Copyright 1989...End Of Time                                               }
+{ EZ-Soft                                                                    }
+{                                                                            }
+{ Written by: P.C. Easdown                                                   }
+{----------------------------------------------------------------------------}
+
+{$ keep 'EZString' }
+Unit EZString;
+
+interface
+
+Uses Common, QuickDrawII;
+
+{$ libprefix 'int/' }
+USES EZConst;
+
+{----------------------------------------------------------------------------}
+{ Upper  Will convert the input character to upper case.                     }
+{ ~~~~~                                                                      }
+{----------------------------------------------------------------------------}
+
+Function Upper(InChar : char) : char; extern;
+
+{----------------------------------------------------------------------------}
+{ UpperStr Will convert the input string to upper case.                      }
+{ ~~~~~~~~                                                                   }
+{----------------------------------------------------------------------------}
+
+Procedure UpperStr(var InString : univ pString); extern;
+
+{----------------------------------------------------------------------------}
+{ Lower  Will convert the input character to lower case.                     }
+{ ~~~~~                                                                      }
+{----------------------------------------------------------------------------}
+
+Function Lower(InChar : char) : char; extern;
+
+{----------------------------------------------------------------------------}
+{ LowerStr Will convert the input string to lower case.                      }
+{ ~~~~~~~~                                                                   }
+{----------------------------------------------------------------------------}
+
+Procedure LowerStr(var InString : univ pString); extern;
+
+{----------------------------------------------------------------------------}
+{ EZFixStringToRect  Will take a pascal string, check it's length in pixels  }
+{ ~~~~~~~~~~~~~~~~~  and adjust it until it will fit within the specified    }
+{                    rectangle.  If the routine has to truncate the string,  }
+{                    then the boolean parameter specifies from which end of  }
+{                    the string to truncate, and to add three periods.       }
+{                                                                            }
+{ inRect      - The rectangle in which the string must fit.  Note that only  }
+{               the horizontal coordinates are used.                         }
+{ inString    - The string to be adjusted.                                   }
+{ outString   - The result of the adjustment.                                }
+{ truncateEnd - A flag indicating which end of the string to truncate.       }
+{----------------------------------------------------------------------------}
+
+Procedure EZFixStringToRect(    inRect      : rect;
+                            var inString    : pString;
+                            var outString   : pString;
+                                truncateEnd : boolean);
+
+{----------------------------------------------------------------------------}
+{ EZListCompare  This is a system support routine for use in the SortList    }
+{ ~~~~~~~~~~~~~  tool call. The only difference between this and the default }
+{                routine, is that this routine will ignore case in the       }
+{                comparison.                                                 }
+{----------------------------------------------------------------------------}
+
+{$ ToolParms+    }
+{$ DataBank+     }
+Procedure EZListCompare; Extern;
+{$ ToolParms-    }
+{$ DataBank-     }
+
+PROCEDURE deTabString(VAR value:    pString);
+(*
+  OPERATION:
+    Will replace any tab characters in the specified string with spaces.
+*)
+
+PROCEDURE trimString(VAR value : pString);
+(*
+  OPERATION:
+    Will delete all leading and trailing spaces from the supplied string.
+*)
+
+PROCEDURE ConvertInteger(    theNumber: INTEGER;
+                         VAR theString: pString;
+                             theSize:   INTEGER);
+(*
+  OPERATION:
+    Will convert theNumber into a string with a fixed length of theSize
+    characters.
+*)
+
+IMPLEMENTATION
+
+const
+  tab                 = 9;
+  space               = 32;
+
+Procedure EZFixStringToRect;
+var
+    inStringWidth   :   integer;
+    inRectWidth     :   integer;
+    workString      :   pString;
+
+    Procedure AdjustEndOfString;
+    begin
+        outString := copy(inString,1,length(inString)-3);
+
+        while inStringWidth >= inRectWidth do
+        begin
+            delete(outString,length(outstring),1);
+            workString := concat(outString, '...');
+            inStringWidth := StringWidth(@workString);
+        end;
+
+        outString := concat(outString, '...');
+    end;
+
+    Procedure AdjustStartOfString;
+    var
+        separatorPos    :   integer;
+    begin
+        outString := copy(inString,4,length(inString)-3);
+
+        while inStringWidth >= inRectWidth do
+        begin
+            separatorPos := pos(Separator, outString);
+            delete(outString,1,separatorPos);
+            workString := concat('...', outString);
+            inStringWidth := StringWidth(@workString);
+        end;
+
+        outString := concat('...', outString);
+    end;    
+
+begin
+    inStringWidth := StringWidth(@inString);
+    inRectWidth := inRect.h2 - inRect.h1;
+
+    If inStringWidth >= inRectWidth
+    then
+        begin
+            If truncateEnd
+            then
+                AdjustEndOfString
+            else
+                AdjustStartOfString;
+        end
+    else
+        outString := inString;
+end;
+
+PROCEDURE deTabString;
+VAR
+  index:  INTEGER;
+BEGIN
+  IF value <> '' THEN BEGIN
+    FOR index := 1 to LENGTH(value) DO BEGIN
+      IF value[index] = CHR(tab) THEN BEGIN
+        value[index] := CHR(space);
+      END;
+    END;
+  END;
+END (* deTabString *);
+
+PROCEDURE trimString;
+BEGIN
+  IF value <> '' THEN BEGIN
+    deTabString(value);
+
+    WHILE (value[1] = CHR(space)) DO BEGIN
+      DELETE(value, 1, 1);
+    END;
+
+    WHILE (value[LENGTH(value)] = CHR(space)) DO BEGIN
+      DELETE(value, LENGTH(value), 1);
+    END;
+  END;
+END (* trimString *);
+
+PROCEDURE ConvertInteger;
+BEGIN
+  theString := CNVIS(theNumber);
+
+  WHILE LENGTH(theString) < theSize DO BEGIN
+    INSERT('0', theString, 1);
+  END;
+END (* ConvertInteger *);
+
+end.

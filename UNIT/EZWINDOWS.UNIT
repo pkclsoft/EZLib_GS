@@ -1,0 +1,192 @@
+{----------------------------------------------------------------------------}
+{                            EZWINDOWS.UNIT                                  }
+{                                                                            }
+{ This unit contains routines specific to windows and their related          }
+{ functions.                                                                 }
+{                                                                            }
+{ Copyright 1989...End Of Time                                               }
+{ EZ-Soft                                                                    }
+{                                                                            }
+{ Written by: P.C. Easdown                                                   }
+{----------------------------------------------------------------------------}
+
+{$ keep 'EZWindows' }
+Unit EZWindows;
+
+interface
+
+uses Common, QuickDrawII, WindowMgr;
+
+{----------------------------------------------------------------------------}
+{ startupEZDialog  This function will create a window on the screen that     }
+{ ~~~~~~~~~~~~~~~  looks like a dialog.  This is for the purpose of creating }
+{ a window full of extended controls, that cannot normally be created in a   }
+{ normal dialog.                                                             }
+{                                                                            }
+{ WindowRect   - This is the boundary rectangle of the window to be created. }
+{ ControlProc  - This is a pointer to a procedure that will be called by the }
+{                window manager when the window need to be redrawn.  Pass    }
+{                NIL for no refresh procedure.                               }
+{----------------------------------------------------------------------------}
+
+Function startupEZDialog(WindowRect      : Rect;
+                         ControlProc     : Ptr) : grafPortPtr;
+
+Function startupEZWindow(WindowRect      : Rect;
+                         inWindowRecord  : paramListPtr;
+                         ControlProc     : Ptr) : grafPortPtr;
+
+{----------------------------------------------------------------------------}
+{ EZUpdateWindow  This procedure is an assembly routine that obtains the     }
+{ ~~~~~~~~~~~~~~  address of the specified windows content drawing procedure }
+{ so that it may be called, to effect the update of the specified window.    }
+{ normal dialog.                                                             }
+{                                                                            }
+{ WindowPtr    - This is the pointer to the window or grafport to be updated }
+{----------------------------------------------------------------------------}
+
+Procedure EZUpdateWindow(WindowPtr       : univ grafPortPtr); extern;
+
+{----------------------------------------------------------------------------}
+{ EZForceRefresh  This procedure scans through the current list of windows   }
+{ ~~~~~~~~~~~~~~  and forces the contents of each one to be re-drawn.  This  }
+{ may be used to force windows to be updated when there is no need to call   }
+{ TaskMaster.                                                                }
+{----------------------------------------------------------------------------}
+
+Procedure EZForceRefresh;
+
+implementation
+
+Function startupEZDialog;
+var
+    WindowRecord    : paramListPtr;
+    tmpPort         : grafPortPtr;
+begin
+    new(WindowRecord);
+    With WindowRecord^ do
+    begin
+        paramLength := 78;
+        wFrameBits := $2228;
+        wTitle := Nil;
+        wRefCon := 0;
+        wZoom.h1 := 0;
+        wZoom.h2 := 0;
+        wZoom.v1 := 0;
+        wZoom.v2 := 0;
+        wColor := Nil;
+        wYOrigin := 0;
+        wXOrigin := 0;
+        wDataH := WindowRect.v2 - WindowRect.v1;
+        wDataW := WindowRect.h2 - WindowRect.h1;
+        wMaxH := WindowRect.v2 - WindowRect.v1;
+        wMaxW := WindowRect.h2 - WindowRect.h1;
+        wScrollVer := 0;
+        wScrollHor := 0;
+        wPageVer := 0;
+        wPageHor := 0;
+        wInfoRefCon := 0;
+        wInfoHeight := 0;
+        wFrameDefProc := nil;
+        wInfoDefProc := nil;
+        wContDefProc := ControlProc;
+        wPosition := WindowRect;
+        wPlane := pointer(topMost);
+        wStorage := nil;
+    end;
+ 
+    tmpPort := NewWindow(WindowRecord^);
+
+    SetPort(tmpPort);
+
+    startupEZDialog := tmpPort;
+end;
+
+Function startupEZWindow;
+var
+    intWindowRecord : paramListPtr;
+    intWindowColors : wColorPtr;
+    tmpPort         : grafPortPtr;
+begin
+    new(intWindowColors);
+    With intWindowColors^ do
+    begin
+        frameColor := $0000;
+        titleColor := $0f00;
+        tBarColor  := $020f;
+        growColor  := $00f0;
+        infoColor  := $00f0;
+    end;
+ 
+    If inWindowRecord = Nil
+    then
+        begin
+            new(intWindowRecord);
+            With intWindowRecord^ do
+            begin
+                paramLength := 78;
+                wFrameBits := $dce3;   { % 1101 1100 1110 0011 }
+                wTitle := Nil;
+                wRefCon := 0;
+                wZoom.h1 := 0;
+                wZoom.h2 := 0;
+                wZoom.v1 := 0;
+                wZoom.v2 := 0;
+                wColor := intWindowColors;
+                wYOrigin := 0;
+                wXOrigin := 0;
+                wDataH := WindowRect.v2 - WindowRect.v1;
+                wDataW := WindowRect.h2 - WindowRect.h1;
+                wMaxH := WindowRect.v2 - WindowRect.v1;
+                wMaxW := WindowRect.h2 - WindowRect.h1;
+                wScrollVer := 0;
+                wScrollHor := 0;
+                wPageVer := 0;
+                wPageHor := 0;
+                wInfoRefCon := 0;
+                wInfoHeight := 0;
+                wFrameDefProc := nil;
+                wInfoDefProc := nil;
+                wContDefProc := ControlProc;
+                wPosition := WindowRect;
+                wPlane := pointer(topMost);
+                wStorage := nil;
+            end;
+        end
+    else
+        begin
+            intWindowRecord := inWindowRecord;
+            With intWindowRecord^ do
+            begin
+                wColor := intWindowColors;
+                wDataH := WindowRect.v2 - WindowRect.v1;
+                wDataW := WindowRect.h2 - WindowRect.h1;
+                wMaxH := WindowRect.v2 - WindowRect.v1;
+                wMaxW := WindowRect.h2 - WindowRect.h1;
+                wContDefProc := ControlProc;
+                wPosition := WindowRect;
+            end;
+        end;
+ 
+    tmpPort := NewWindow(intWindowRecord^);
+
+    SetPort(tmpPort);
+
+    startupEZWindow := tmpPort;
+end;
+
+Procedure EZForceRefresh;
+var
+    theWindow       :   grafPortPtr;
+    contentRegion   :   rgnHandle;
+begin
+    theWindow := grafPortPtr(GetFirstWindow);
+
+    while theWindow <> Nil do
+    begin
+        EZUpdateWindow(theWindow);
+        theWindow := GetNextWindow(theWindow);
+    end;
+end;
+
+end.

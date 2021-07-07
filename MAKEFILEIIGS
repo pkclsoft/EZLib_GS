@@ -1,0 +1,122 @@
+obj/ezlib obj/ezconst.a     obj/ezmisc.a      obj/ezstring.a   
+          obj/ezwindows.a   obj/ezcontrols.a  obj/ezlineedit.a
+          obj/ezalerts.a    obj/ezdisk.a      obj/ezdates.a
+          obj/eztools.a     obj/ezmenu.a      obj/ezlist.a
+          obj/ezcrypt.a     obj/ezdebug.a     obj/ezasm.a
+          obj/ezcmdline.a
+    {   delete obj/ezlib
+        makelibiigs -l obj/ezlib -r obj/ezconst.a     obj/ezmisc.a      obj/ezstring.a   
+        makelibiigs -l obj/ezlib -r obj/ezwindows.a   obj/ezcontrols.a  obj/ezlineedit.a
+        makelibiigs -l obj/ezlib -r obj/ezalerts.a    obj/ezdisk.a      obj/ezdates.a
+        makelibiigs -l obj/ezlib -r obj/eztools.a     obj/ezmenu.a      obj/ezlist.a
+        makelibiigs -l obj/ezlib -r obj/ezcrypt.a     obj/ezasm.a       obj/ezasm.root
+        makelibiigs -l obj/ezlib -r obj/ezcmdline.a   obj/ezdebug.a
+     }
+
+obj/ezconst.a
+    unit/ezconst.unit
+                        {   compile unit/ezconst.unit
+                            move -c ezconst.int int
+                            move -c ezconst.a obj }
+
+obj/ezasm.a
+    asm/ezasm.asm       {   compile asm/ezasm.asm
+                            move -c ezasm.root obj
+                            move -c ezasm.a obj }
+
+obj/ezmisc.a
+    unit/ezmisc.unit
+    obj/ezconst.a
+    obj/ezasm.a         {   compile unit/ezmisc.unit
+                            move -c ezmisc.int int
+                            move -c ezmisc.a obj }
+
+obj/ezstring.a
+    obj/ezconst.a
+    unit/ezstring.unit  {   compile unit/ezstring.unit
+                            move -c ezstring.int int
+                            move -c ezstring.a obj }
+
+obj/ezwindows.a
+    unit/ezwindows.unit {   compile unit/ezwindows.unit 
+                            move -c ezwindows.int int
+                            move -c ezwindows.a obj }
+
+obj/ezcontrols.a
+    obj/ezconst.a
+    obj/ezmisc.a
+    obj/ezstring.a
+    obj/ezwindows.a
+    unit/ezcontrols.unit  { compile unit/ezcontrols.unit 
+                            move -c ezcontrols.int int
+                            move -c ezcontrols.a obj }
+
+obj/ezlineedit.a
+    unit/ezlineedit.unit  { compile unit/ezlineedit.unit 
+                            move -c ezlineedit.int int
+                            move -c ezlineedit.a obj }
+
+obj/ezalerts.a
+    obj/ezconst.a
+    obj/ezmisc.a
+    obj/ezwindows.a
+    unit/ezalerts.unit  {   compile unit/ezalerts.unit 
+                            move -c ezalerts.int int
+                            move -c ezalerts.a obj }
+
+obj/ezdisk.a
+    obj/ezconst.a
+    obj/ezmisc.a
+    obj/ezcontrols.a
+    obj/ezalerts.a
+    obj/ezwindows.a
+    obj/ezlineedit.a
+    obj/ezstring.a
+    unit/ezdisk.unit    {   compile unit/ezdisk.unit 
+                            move -c ezdisk.int int
+                            move -c ezdisk.a obj }
+
+obj/ezdates.a
+    obj/ezconst.a
+    obj/ezmisc.a
+    unit/ezdates.unit   {   compile unit/ezdates.unit 
+                            move -c ezdates.int int
+                            move -c ezdates.a obj }
+
+obj/eztools.a
+    obj/ezconst.a
+    obj/ezmisc.a
+    unit/eztools.unit   {   compile unit/eztools.unit 
+                            move -c eztools.int int
+                            move -c eztools.a obj }
+
+obj/ezmenu.a
+    obj/ezconst.a
+    obj/ezmisc.a
+    unit/ezmenu.unit    {   compile unit/ezmenu.unit 
+                            move -c ezmenu.int int
+                            move -c ezmenu.a obj }
+
+obj/ezlist.a
+    obj/ezconst.a
+    obj/ezmisc.a
+    obj/ezstring.a
+    unit/ezlist.unit    {   compile unit/ezlist.unit 
+                            move -c ezlist.int int
+                            move -c ezlist.a obj }
+
+obj/ezcrypt.a
+    unit/ezcrypt.unit   {   compile unit/ezcrypt.unit 
+                            move -c ezcrypt.int int
+                            move -c ezcrypt.a obj }
+
+obj/ezdebug.a
+    unit/ezdebug.unit   {   compile unit/ezdebug.unit 
+                            move -c ezdebug.int int
+                            move -c ezdebug.a obj }
+
+obj/ezcmdline.a
+    unit/ezcmdline.unit
+    obj/ezstring.a     {  compile unit/ezcmdline.unit
+                            move -c ezcmdline.int int
+                            move -c ezcmdline.a obj }

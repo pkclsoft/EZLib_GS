@@ -1,0 +1,9 @@
+delete int/=.int
+delete obj/=.a
+delete obj/=.root
+delete obj/ezlib
+filetype makefile src
+filetype unit/=.unit src 5
+filetype pas/=.pas src 5
+filetype asm/=.asm src 3
+6/purge

@@ -1,0 +1,316 @@
+{----------------------------------------------------------------------------}
+{                              EZCONST.UNIT                                  }
+{                                                                            }
+{ This unit contains a number of constants for GS/OS that have not been      }
+{ supplied by APW or ByteWorks.                                              }
+{                                                                            }
+{ Copyright 1989...End Of Time                                               }
+{ EZ-Soft                                                                    }
+{                                                                            }
+{ Written by: P.C. Easdown                                                   }
+{----------------------------------------------------------------------------}
+
+{$ keep 'EZConst' }
+Unit EZConst;
+
+interface
+
+Uses    Common;
+
+const
+    {  -------------------   File Types   -------------------  }
+
+    UnknownFileType         = $00;
+    BadBlocksFile           = $01;
+    TextFile                = $04;
+    BinaryFile              = $06;
+    DoubleHIRESFile         = $08;
+    DirectoryFile           = $0f;
+    AppleworksDataBase      = $19;
+    AppleworksWordProcessor = $1a;
+    AppleworksSpreadsheet   = $1b;
+    WordProcessorFile       = $50;
+    SpreadsheetFile         = $51;
+    DataBaseFile            = $52;
+    ObjectOrientedGraphics  = $53;
+    DesktopPublishingFile   = $54;
+    HypermediaFile          = $55;
+    EducationalDataFile     = $56;
+    StationaryFile          = $57;
+    HelpFile                = $58;
+    CommunicationsFile      = $59;
+    ApplicationConfigFile   = $5a;
+    GSBasicProgram          = $ab;
+    GSBasicToolbox          = $ac;
+    GSBasicData             = $ad;
+    SourceFile              = $b0;
+    ObjectFile              = $b1;
+    LibraryFile             = $b2;
+    GSOSApplication         = $b3;
+    GSOSRunTimeLibrary      = $b4;
+    GSOSShellApplication    = $b5;
+    GSOSPermanentInitFile   = $b6;
+    IIGSTemporaryInitFile   = $b7;
+    IIGSNewDeskAccessory    = $b8;
+    ClassicDeskAccessory    = $b9;
+    ToolFile                = $ba;
+    DeviceDriverFile        = $bb;
+    GenericLoadFile         = $bc;
+    FileSystemTranslator    = $bd;
+    IIGSSoundFile           = $bf;
+    IIGSSuperHIRESImageFile = $c0;
+    IIGSSuperHIRESPicture   = $c1;
+    IIGSFontFile            = $c8;
+    FinderDataFile          = $c9;
+    FinderIconFile          = $ca;
+    MusicFile               = $d5;
+    InstrumentFile          = $d6;
+    MIDIFile                = $d7;
+    CommunicationsLibrary   = $e0;
+    AppleTalkFile           = $e2;
+    PascalPartition         = $ef;
+    CommandFile             = $f0;
+    GSOSSystemFile          = $f9;
+    IntegerBasicProgramFile = $fa;
+    IntegerBasicVariables   = $fb;
+    ApplesoftProgramFile    = $fc;
+    ApplesoftVariableFile   = $fd;
+    EDASMRelocatableFile    = $fe;
+    Prodos8Application      = $ff;
+    FileServerType          = $0000fff5;
+    Drive525                = $0000fff9;
+    RamDrive                = $0000fffa;
+    Disk35                  = $0000fffb;
+    Disk525                 = $0000fffc;
+    HardDrive               = $0000fffd;
+    CDRom                   = $0000fff8;
+
+    {  -------------------   Storage Types   -------------------  }
+
+    StandardFileStorage     = $0001;
+    ExtendedFileStorage     = $0005;
+    DirectoryFileStorage    = $000d;
+
+    {  -------------------   Access Masks   -------------------  }
+
+    destroyEnableMask       = $0080;
+    renameEnableMask        = $0040;
+    backupNeededMask        = $0020;
+    fileInvisibleMask       = $0004;
+    writeEnableMask         = $0002;
+    readEnableMask          = $0001;
+
+    {  -------------------   Device Control Commands   -------------------  }
+
+    dcResetDevice           = $0000;
+    dcFormatDevice          = $0001;
+    dcEject                 = $0002;
+    dcSetControlParameters  = $0003;
+    dcSetWaitMode           = $0004;
+    dcSetFormatOption       = $0005;
+    dcAssignPartitionOwner  = $0006;
+    dcARM_EVENT             = $0007;
+
+    {  ----------------   Device Characteristic Masks   ----------------  }
+
+    dcmRAMROMDiskMask       = $8000;
+    dcmGeneratedDevice      = $4000;
+    dcmDeviceBusy           = $1000;
+    dcmDeviceSpeed          = $0300;
+    dcmBlockDevice          = $0080;
+    dcmWriteEnabled         = $0040;
+    dcmReadEnabled          = $0020;
+    dcmFormatEnabled        = $0008;
+    dcmRemovableMedia       = $0004;
+
+    {  -------------------   Device ID Numbers   -------------------  }
+
+    DiskII                  = $0000;
+    Profile5Meg             = $0001;
+    Profile10Meg            = $0002;
+    Disk3_5                 = $0003;
+    SCSIGeneric             = $0004;
+    SCSIHardDisk            = $0005;
+    SCSITapeDrive           = $0006;
+    SCSICDRom               = $0007;
+    SCSIPrinter             = $0008;
+    SerialModem             = $0009;
+    ConsoleDriver           = $000a;
+    SerialPrinter           = $000b;
+    SerialLaserWriter       = $000c;
+    AppleTalkLaserWriter    = $000d;
+    RAMDisk                 = $000e;
+    ROMDisk                 = $000f;
+    FileServer              = $0010;
+    IBX                     = $0011;
+    AppleDesktopBus         = $0012;
+    HardDiskGeneric         = $0013;
+    FloppyDiskGeneric       = $0014;
+    TapeDriveGeneric        = $0015;
+    CharacterDeviceGeneric  = $0016;
+    MFMFloppyDisk           = $0017;
+    NetworkGeneric          = $0018;
+    SCSISequentialAccess    = $0019;
+    SCSIScanner             = $001a;
+    OtherScanner            = $001b;
+    LaserWriterSC           = $001c;
+    AppleTalkMainDriver     = $001d;
+    AppleTalkFileServer     = $001e;
+    AppleTalkRPMDriver      = $001f;
+
+    {  -------------------   Device Status Codes   -------------------  }
+
+    dsDeviceStatus          = $0000;
+    dsControlParameters     = $0001;
+    dsReturnWaitMode        = $0002;
+    dsGetFormatOptions      = $0003;
+
+    {  -------------------   File System IDs   -------------------  }
+
+    fsProDOS                = $0001;
+    fsSOS                   = $0001;
+    fsDOS3_3                = $0002;
+    fsDOS3_2                = $0003;
+    fsDOS3_1                = $0003;
+    fsAppleIIPascal         = $0004;
+    fsMFS                   = $0005;
+    fsHFS                   = $0006;
+    fsLISA                  = $0007;
+    fsAppleCPM              = $0008;
+    fsCharacter             = $0009;
+    fsMSDOS                 = $000a;
+    fsHighSierra            = $000b;
+    fsISO9660               = $000c;
+    fsAppleShare            = $000d;
+
+    {  -------------------   File Flag Masks   -------------------  }
+
+    ffExtendedFileMask      = $8000;
+
+    {  -------------------   GetDirEntry Constants   -------------------  }
+
+    gdeBaseAbsolute         = $0000;
+    gdeBaseAddDisplacement  = $0001;
+    gdeSubtractDisplacement = $0002;
+
+    {  -------------------   Resource Types   -------------------  }
+
+    rListIcon               = $0001;
+    rListPattern            = $0002;
+    rProductTitle           = $0003;
+    rProductDetails         = $0004;
+    rSerialNumber           = $0005;
+    rPreferences            = $0006;
+    rLicenseDetails         = $0007;
+    rAppSpecific            = $0008;
+
+    rIcon                   = $8001;
+    rPicture                = $8002;
+    rControlList            = $8003;
+    rControlTemplate        = $8004;
+    r_AAAA                  = $8005;
+    rPString                = $8006;
+    rStringList             = $8007;
+    rMenuBar                = $8008;
+    rMenu                   = $8009;
+    rMenuItem               = $800A;
+    rTextForLETextBox2      = $800B;
+    rCtlDefProc             = $800C;
+    r_BBBB                  = $800D;
+    rWindParam1             = $800E;
+    rWindParam2             = $800F;
+    rWindColor              = $8010;
+    rTextBlock              = $8011;
+    rStyleBlock             = $8012;
+    rToolStartup            = $8013;
+    rResName                = $8014;
+    rAlertString            = $8015;
+    rText                   = $8016;
+    rCodeResource           = $8017;
+    rCDEVCode               = $8018;
+    rCDEVFlags              = $8019;
+    rTwoRects               = $801A;
+    r_DDDD                  = $801B;
+    rListRef                = $801C;
+    rCString                = $801D;
+    r_FFFF                  = $801E;
+    r_GGGG                  = $801F;
+    r_HHHH                  = $801F;
+    rErrorString            = $8020;
+    rWString                = $8022;
+    rC1OutputString         = $8023;
+    rSoundSample            = $8024;
+    rTERuler                = $8025;
+    rFSequence              = $8026;
+
+    {  -------------------   Sprites Constants   -------------------  }
+
+    MaxSprites      = 100;      { Maximum number of sprites per sprite file   }
+    MaxShapes       = 7;        { Number of shapes per sprite                 }
+ 
+    {  -------------------   Miscellaneous Constants   -------------------  }
+
+    On              = 1;        { Constants useful for the SetRadioButton and }
+    Off             = 0;        { SetCheckBox routines found in EZCONTROLS.   }
+ 
+    Return          = 13;
+ 
+    GSOSNameLength  = 508;      { Maximum length of GS/OS pathname.           }
+ 
+    addToEnd        = True;     { These two constants are defined for use with }
+    addToStart      = False;    { EZFixStringToRect to specify where to add    }
+                                { the three periods.                           }
+
+    FileNameLength          =   32;
+
+    lineEditHeight          =   11;{ Height in pixels of an lineEdit control.  }
+ 
+    lineEditAllKeys         =   0;
+    lineEditAlphaNumeric    =   1;
+    lineEditAlphabetic      =   2;
+    lineEditNumeric         =   3;
+    lineEditPathname        =   4;
+
+    {  -------------------   Toolbox Numbers   -------------------  }
+
+    { Toolbox number constants for use in Tool Locator type calls. }
+ 
+    ToolLocator     = 1;
+    MemoryManager   = 2;
+    MiscToolSet     = 3;
+    QuickDrawII     = 4;
+    DeskManager     = 5;
+    EventManager    = 6;
+    Scheduler       = 7;
+    SoundToolSet    = 8;
+    ADBToolSet      = 9;
+    SANEToolSet     = 10;
+    IntegerMath     = 11;
+    TextToolSet     = 12;
+    ReservedSet     = 13;
+    WindowManager   = 14;
+    MenuManager     = 15;
+    ControlManager  = 16;
+    SystemLoader    = 17;
+    QuickDrawIIAux  = 18;
+    PrintManager    = 19;
+    LineEditToolSet = 20;
+    DialogManager   = 21;
+    ScrapManager    = 22;
+    StandardFile    = 23;
+    NotAvailable    = 24;
+    NoteSynthesizer = 25;
+    NoteSequencer   = 26;
+    FontManager     = 27;
+    ListManager     = 28;
+    ACEToolSet      = 29;
+    ResourceManager = 30;
+    MIDIToolSet     = 31;
+    TextEditToolSet = 34;
+ 
+    Separator       = ':';  { The separator used throughout in          }
+                            { pathnames.                                }
+
+implementation
+
+end.

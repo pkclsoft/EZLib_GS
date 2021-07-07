@@ -1,0 +1,1273 @@
+{----------------------------------------------------------------------------}
+{                             EZCONTROLS.UNIT                                }
+{                                                                            }
+{ This unit contains a suite of calls that relate to extended controls. They }
+{ have been written such that an application need not worry about control    }
+{ specifics such as bits in flags that need to be set.  In order to make an  }
+{ applications code read better, and to reduce the amount of work needed to  }
+{ manipulate the extended controls, several routines within this unit supply }
+{ mechanisms that allow the application to divorce itself almost completely  }
+{ from things such as control handles.                                       }
+{                                                                            }
+{ Copyright 1989...End Of Time                                               }
+{ EZ-Soft                                                                    }
+{                                                                            }
+{ Written by: P.C. Easdown                                                   }
+{----------------------------------------------------------------------------}
+
+{$ keep 'EZControls' }
+Unit EZControls;
+
+Interface
+
+Uses Common, QuickDrawII, ControlMgr, WindowMgr, ListMgr, LineEdit,
+     MenuMgr, ToolLocator, EventMgr, TextEdit;
+
+{$ libprefix 'int/' }
+USES EZConst, EZMisc, EZString, EZWindows;
+
+TYPE
+    { Specific pointer types for all of the extended control templates.       }
+ 
+    simpleButtonTemplatePtr = ^simpleButtonControl;
+ 
+    checkOrRadioTemplatePtr = ^checkOrRadioControl;
+ 
+    scrollBarTemplatePtr    = ^scrollControl;
+ 
+    statTextTemplatePtr     = ^statTextControl;
+ 
+    lineEditTemplatePtr     = ^editLineControl;
+ 
+    editTextTemplatePtr     = ^editTextControl;
+ 
+    popUpTemplatePtr        = ^popUpControl;
+ 
+    listTemplatePtr         = ^listControl;
+ 
+    growBoxTemplatePtr      = ^growControl;
+ 
+    pictureTemplatePtr      = ^pictureControl;
+ 
+    iconButtonTemplatePtr   = ^iconButtonControl;
+ 
+    { A record to contain a key equivalence.  Better than passing lots of     }
+    { variables around.                                                       }
+ 
+    keyEquivalentRec        = Record
+                                key1            : byte;
+                                key2            : byte;
+                                mods            : integer;
+                                modsCharBits    : integer;
+                              end;
+    keyEquivalentRecPtr     = ^keyEquivalentRec;
+ 
+{----------------------------------------------------------------------------}
+{ The following template calls all return a pointer to a template that has   }
+{ been allocated a peice of memory dynamically, and filled out correctly, as }
+{ per volume 3 of the toolbox reference. The application may then place this }
+{ pointer in an array to be passed to NewControl2, or it may be passed into  }
+{ NewControl2 as a single control template.                                  }
+{                                                                            }
+{ Common Parameters: The first five parameters of each template call are the }
+{ same.  These parameters will be discussed briefly here.  For information   }
+{ on the other parameters, refer to chapter 28 of the toolbox reference      }
+{ manual.                                                                    }
+{                                                                            }
+{ inid         - the application specified item ID of the extended control.  }
+{                Note that this ID is used extensivley by all other routines }
+{                in the EZ Library.                                          }
+{ inRect       - The boundary rectangle for the extended control in local    }
+{                coordinates.                                                }
+{ inFlag       - The flag word common to all controls. Each template routine }
+{                ensures that the appropriate bits are set/cleared for each  }
+{                control type.                                               }
+{ inMoreFlags  - The moreFlags longword common to all controls. Each routine }
+{                ensures that the appropriate bits are set/cleared for each  }
+{                control type.                                               }
+{ inRefCon     - An application specified value.                             }
+{----------------------------------------------------------------------------}
+
+Function newButtonTemplate(inID                : longint;
+                           inRect              : rect;
+                           inFlag              : integer;
+                           inMoreFlags         : integer;
+                           inRefCon            : longint;
+                           inTitleRef          : ptr;
+                           inColorTableRef     : ptr;
+                           inKeyEquivalent     : keyEquivalentRecPtr) : ptr;
+
+Function newCheckBoxTemplate(inID                : longint;
+                             inRect              : rect;
+                             inFlag              : integer;
+                             inMoreFlags         : integer;
+                             inRefCon            : longint;
+                             inTitleRef          : ptr;
+                             inInitialValue      : integer;
+                             inColorTableRef     : ptr;
+                             inKeyEquivalent     : keyEquivalentRecPtr) : ptr;
+
+Function newIconButtonTemplate(inID                : longint;
+                               inRect              : rect;
+                               inFlag              : integer;
+                               inMoreFlags         : integer;
+                               inRefCon            : longint;
+                               inIconRef           : ptr;
+                               inTitleRef          : ptr;
+                               inDisplayMode       : integer;
+                               inColorTableRef     : ptr;
+                               inKeyEquivalent     : keyEquivalentRecPtr) : ptr;
+
+Function newLineEditTemplate(inID                : longint;
+                             inRect              : rect;
+                             inFlag              : integer;
+                             inMoreFlags         : integer;
+                             inRefCon            : longint;
+                             inMaxSize           : integer;
+                             inDefaultRef        : ptr) : ptr;
+
+Function newListTemplate(inID                : longint;
+                         inRect              : rect;
+                         inFlag              : integer;
+                         inMoreFlags         : integer;
+                         inRefCon            : longint;
+                         inListSize          : integer;
+                         inListView          : integer;
+                         inListType          : integer;
+                         inListStart         : integer;
+                         inListDraw          : procPtr;
+                         inListMemHeight     : integer;
+                         inListMemSize       : integer;
+                         inListRef           : ptr;
+                         inColorRef          : ptr) : ptr;
+
+Function newPictureTemplate(inID                : longint;
+                            inRect              : rect;
+                            inFlag              : integer;
+                            inMoreFlags         : integer;
+                            inRefCon            : longint;
+                            inPictureRef        : ptr) : ptr;
+
+Function newPopUpTemplate(inID                : longint;
+                          inRect              : rect;
+                          inFlag              : integer;
+                          inMoreFlags         : integer;
+                          inRefCon            : longint;
+                          inTitleWidth        : integer;
+                          inMenuRef           : ptr;
+                          inInitialValue      : integer;
+                          inColorRef          : ptr) : ptr;
+
+Function newRadioButtonTemplate(inID                : longint;
+                                inRect              : rect;
+                                inFlag              : integer;
+                                inMoreFlags         : integer;
+                                inRefCon            : longint;
+                                inTitleRef          : ptr;
+                                inInitialValue      : integer;
+                                inColorTableRef     : ptr;
+                                inKeyEquivalent     : keyEquivalentRecPtr) : ptr;
+
+Function newScrollBarTemplate(inID                : longint;
+                              inRect              : rect;
+                              inFlag              : integer;
+                              inMoreFlags         : integer;
+                              inRefCon            : longint;
+                              inMaxSize           : integer;
+                              inViewSize          : integer;
+                              inInitialValue      : integer;
+                              inColorTableRef     : ptr) : ptr;
+
+Function newGrowBoxTemplate(inID                : longint;
+                            inRect              : rect;
+                            inFlag              : integer;
+                            inMoreFlags         : integer;
+                            inRefCon            : longint;
+                            inColorTableRef     : ptr) : ptr;
+
+Function newStatTextTemplate(inID                : longint;
+                             inRect              : rect;
+                             inFlag              : integer;
+                             inMoreFlags         : integer;
+                             inRefCon            : longint;
+                             inTextRef           : ptr;
+                             inTextSize          : integer;
+                             inJust              : integer) : ptr;
+
+Function newEditTextTemplate(inID                : longint;
+                             inRect              : rect;
+                             inFlag              : integer;
+                             inMoreFlags         : integer;
+                             inRefCon            : longint;
+                             inTextFlags         : longint;
+                             inIndentRect        : rect;
+                             inVertBar           : ctlRecHndl;
+                             inVertAmount        : integer;
+                             inStyleRef          : ptr;
+                             inTextDescriptor    : integer;
+                             inTextRef           : ptr;
+                             inTextLength        : longint;
+                             inMaxChars          : longint;
+                             inColorTableRef     : ptr;
+                             inDrawMode          : integer;
+                             inFilterProcPtr     : procPtr) : ptr;
+
+{----------------------------------------------------------------------------}
+{ EZDialogEvent This function calls TaskMaster to handle any system events,  }
+{ ~~~~~~~~~~~~~ returns the item ID of the control that was hit. If an event }
+{ occurs outside a control, then the item ID returned it zero. EZDialogEvent }
+{ also takes care of things which TaskMaster does not, such as the cut,      }
+{ and paste facilities for a lineEdit control.                               }
+{                                                                            }
+{ MultiClick  - Upon returning, this parameter holds the value returned by   }
+{               Taskmaster in the ClickCount field of the task record, thus  }
+{               enabling the application to determine whether a double or    }
+{               triple click has occured.                                    }
+{----------------------------------------------------------------------------}
+
+Function EZDialogEvent(var MultiClick : Integer) : LongInt;
+
+{----------------------------------------------------------------------------}
+{ EZAnyEvent This function calls TaskMaster to handle any system events, and }
+{ ~~~~~~~~~~ returns one of several types of values, as follows:             }
+{                                                                            }
+{ ControlID  - If an event has occured inside a control, then the ID of that }
+{              control is returned.                                          }
+{ MenuItemID - If a menu item has been selected, then the ID of the selected }
+{              menu is returned.                                             }
+{ Event      - If neither a control or a menu has been selected, then the    }
+{              function returns the raw event information in the same format }
+{              as TaskMaster.                                                }
+{                                                                            }
+{ Parameters are as follows:                                                 }
+{                                                                            }
+{ AnyEventRecord - An extended event record in which the event information   }
+{                  is returned.                                              }
+{ CheckMenus     - A boolean flag allowing the application to lock out the   }
+{                  use of menus.  True will allow menu selection.  False     }
+{                  will not.                                                 }
+{----------------------------------------------------------------------------}
+
+Function EZAnyEvent(var AnyEventRecord  : EventRecord;
+                    var EventHandled    : Boolean;
+                        CheckMenus      : Boolean) : LongInt;
+
+{----------------------------------------------------------------------------}
+{ EZDAEvent  This function calls TaskMaster to handle any system events, and }
+{ ~~~~~~~~~  returns one of several types of values, as follows:             }
+{                                                                            }
+{            Essentially, this function is identical to EZAnyEvent, except   }
+{            for the fact that this function calls TaskMasterDA and not the  }
+{            normal TaskMaster entry point.  As such, this function is       }
+{            designed specifically for use with NDA's.                       }
+{                                                                            }
+{ ControlID  - If an event has occured inside a control, then the ID of that }
+{              control is returned.                                          }
+{ MenuItemID - If a menu item has been selected, then the ID of the selected }
+{              menu is returned.                                             }
+{ Event      - If neither a control or a menu has been selected, then the    }
+{              function returns the raw event information in the same format }
+{              as TaskMaster.                                                }
+{                                                                            }
+{ Parameters are as follows:                                                 }
+{                                                                            }
+{ AnyEventRecord - An extended event record in which the event information   }
+{                  is returned.                                              }
+{ CheckMenus     - A boolean flag allowing the application to lock out the   }
+{                  use of menus.  True will allow menu selection.  False     }
+{                  will not.                                                 }
+{----------------------------------------------------------------------------}
+
+Function EZDAEvent(var AnyEventRecord   : EventRecord;
+                   var EventHandled     : Boolean;
+                       CheckMenus       : Boolean) : longInt;
+
+{----------------------------------------------------------------------------}
+{ EZNextMember  Returns the next member number in the extended list contol   }
+{ ~~~~~~~~~~~~  specified by inID.                                           }
+{                                                                            }
+{ inItem   -  Is the first member in the list at which to start searching    }
+{             for another selected item.                                     }
+{ inID     -  Is the item ID of the extended list control.                   }
+{----------------------------------------------------------------------------}
+
+Function EZNextMember(inItem : integer;
+                      inID   : longint) : integer;
+
+{----------------------------------------------------------------------------}
+{ EZSelectMember  Selects the specified member in the extended list contol   }
+{ ~~~~~~~~~~~~~~  specified by inID.                                         }
+{                                                                            }
+{ inItem   -  Is the number of the member to be selected.                    }
+{ inID     -  Is the item ID of the extended list control.                   }
+{----------------------------------------------------------------------------}
+
+Procedure EZSelectMember(inItem : integer;
+                         inID   : longint);
+
+{----------------------------------------------------------------------------}
+{ EZSortList  Will sort the specified list using the default sort routine.   }
+{ ~~~~~~~~~~                                                                 }
+{                                                                            }
+{ inID     - The Item ID of the list control.                                }
+{----------------------------------------------------------------------------}
+
+Procedure EZSortList(inID   : longint);
+
+{----------------------------------------------------------------------------}
+{ EZNewList  Will place register the new list contents with the list manager }
+{ ~~~~~~~~~  and sort it using the default sort routine, before finally      }
+{            selecting the specified member.                                 }
+{                                                                            }
+{ inDrawProc - A pointer to a custom draw member routine.                    }
+{ inStart    - This is the first member to be displayed in the list window.  }
+{ inList     - The new list structure to be passed to NewList2.              }
+{ inSize     - The number of members in the list.                            }
+{ inSelect   - The number of the member to be selected.                      }
+{ inID       - The Item ID of the list control.                              }
+{----------------------------------------------------------------------------}
+
+Procedure EZNewList(    inDrawProc  : ptr;
+                        inStart     : integer;
+                        inList      : ptr;
+                        inSize      : integer;
+                        inSelect    : integer;
+                        inID        : longInt);
+
+{----------------------------------------------------------------------------}
+{ RadioButtonOn  Returns a boolean value indicating whether the radio button }
+{ ~~~~~~~~~~~~~  specified by inID is turned on. A TRUE result indicates ON. }
+{----------------------------------------------------------------------------}
+
+Function RadioButtonOn(inID  : longint) : Boolean;
+
+{----------------------------------------------------------------------------}
+{ CheckBoxOn  Returns a boolean value indicating whether the radio button    }
+{ ~~~~~~~~~~  specified by inID is turned on. A TRUE result indicates ON.    }
+{----------------------------------------------------------------------------}
+
+Function CheckBoxOn(inID  : longint) : Boolean;
+
+{----------------------------------------------------------------------------}
+{ SetRadioButton  Sets the Radio Button specified by inID to either an ON or }
+{ ~~~~~~~~~~~~~~  OFF state.                                                 }
+{                                                                            }
+{ inValue      -  This parameter may be either zero or one.  Zero will turn  }
+{                 the button off.  One will turn the button on.  There are   }
+{                 two constants declared in EZMisc which may be used for     }
+{                 purpose.                                                   }
+{----------------------------------------------------------------------------}
+
+Procedure SetRadioButton(inValue   : integer;
+                         inID      : longInt);
+
+{----------------------------------------------------------------------------}
+{ SetCheckBox  Sets the Check Box specified by inID to either an ON or OFF   }
+{ ~~~~~~~~~~~  state.                                                        }
+{                                                                            }
+{ inValue      -  This parameter may be either zero or one.  Zero will turn  }
+{                 the button off.  One will turn the button on.  There are   }
+{                 two constants declared in EZMisc which may be used for     }
+{                 purpose.                                                   }
+{----------------------------------------------------------------------------}
+
+Procedure SetCheckBox(inValue   : integer;
+                      inID      : longInt);
+
+{----------------------------------------------------------------------------}
+{ Deactivate  Will deactivate the specified extended control.                }
+{ ~~~~~~~~~~                                                                 }
+{----------------------------------------------------------------------------}
+
+Procedure Deactivate(inID  : longint);
+
+{----------------------------------------------------------------------------}
+{ Activate  Will deactivate the specified extended control.                  }
+{ ~~~~~~~~                                                                   }
+{----------------------------------------------------------------------------}
+
+Procedure Activate(inID  : longint);
+
+{----------------------------------------------------------------------------}
+{ EZDrawControls  This routine simply makes to DrawControls, passing the     }
+{ ~~~~~~~~~~~~~~  current port to it.  It may be used when creating a window }
+{                 with nothing but controls in it, for which you need a      }
+{                 refresh routine.                                           }
+{----------------------------------------------------------------------------}
+
+Procedure EZDrawControls;
+
+Implementation
+
+Function newButtonTemplate;
+var
+    template : simpleButtonTemplatePtr;
+begin
+    { template := simpleButtonTemplatePtr(EZNew(40)); }
+    new(template);
+ 
+    with template^ do
+    begin
+        pCount                := 7;
+        ID                    := inID;
+        boundsRect            := inRect;
+        procRef               := cSimpleButtonControl;
+        flag                  := ord(ord4(inFlag) & ord4($0083));
+        moreFlags             := ord(ord4(inMoreFlags) &
+                                         ord4($200f)       |
+                                         ord4($1000));
+        refCon                := inRefCon;
+        titleRef              := ord4(inTitleRef);
+        colorTblRef           := ord4(inColorTableRef);
+        keyEquiv.key1         := inKeyEquivalent^.key1;
+        keyEquiv.key2         := inKeyEquivalent^.key2;
+        keyEquiv.keyModifiers := inKeyEquivalent^.mods;
+        keyEquiv.keyCareBits  := inKeyEquivalent^.modsCharBits;
+ 
+        If inColorTableRef <> Nil then
+            pCount      := 8;
+ 
+        If inKeyEquivalent <> Nil then
+            pCount      := 9;
+    end;
+ 
+    newButtonTemplate := ptr(template);
+end;
+
+Function newCheckBoxTemplate;
+var
+    template : checkOrRadioTemplatePtr;
+begin
+    { template := checkOrRadioTemplatePtr(EZNew(42)); }
+    new(template);
+ 
+    with template^ do
+    begin
+        pCount                := 8;
+        ID                    := inID;
+        boundsRect            := inRect;
+        procRef               := cCheckControl;
+        flag                  := ord(ord4(inFlag) & ord4($0080));
+        moreFlags             := ord(ord4(inMoreFlags) &
+                                         ord4($300f)       |
+                                         ord4($1000));
+        refCon                := inRefCon;
+        titleRef              := ord4(inTitleRef);
+        initialValue          := inInitialValue;
+        colorTblRef           := ord4(inColorTableRef);
+        keyEquiv.key1         := inKeyEquivalent^.key1;
+        keyEquiv.key2         := inKeyEquivalent^.key2;
+        keyEquiv.keyModifiers := inKeyEquivalent^.mods;
+        keyEquiv.keyCareBits  := inKeyEquivalent^.modsCharBits;
+ 
+        If inColorTableRef <> Nil then
+            pCount      := 9;
+ 
+        If inKeyEquivalent <> Nil then
+            pCount      := 10;
+    end;
+ 
+    newCheckBoxTemplate := ptr(template);
+end;
+
+Function newIconButtonTemplate;
+var
+    template : iconButtonTemplatePtr;
+begin
+    { template := iconButtonTemplatePtr(EZNew(46)); }
+    new(template);
+ 
+    with template^ do
+    begin
+        pCount                := 7;
+        ID                    := inID;
+        boundsRect            := inRect;
+        procRef               := cIconButtonControl;
+        flag                  := ord(ord4(inFlag) & ord4($ff87));
+        moreFlags             := ord(ord4(inMoreFlags) &
+                                         ord4($103f)       |
+                                         ord4($1000));
+        refCon                := inRefCon;
+        iconRef               := ord4(inIconRef);
+        titleRef              := ord4(inTitleRef);
+        colorTblRef           := ord4(inColorTableRef);
+        displayMode           := ord(ord4(inDisplayMode) & ord4($ff07));
+        keyEquiv.key1         := inKeyEquivalent^.key1;
+        keyEquiv.key2         := inKeyEquivalent^.key2;
+        keyEquiv.keyModifiers := inKeyEquivalent^.mods;
+        keyEquiv.keyCareBits  := inKeyEquivalent^.modsCharBits;
+ 
+        If inTitleRef <> Nil then
+            pCount      := 8;
+ 
+        If inColorTableRef <> Nil then
+            pCount      := 9;
+ 
+        If inDisplayMode <> 0 then
+            pCount      := 10;
+ 
+        If inKeyEquivalent <> Nil then
+            pCount      := 11;
+    end;
+ 
+    newIconButtonTemplate := ptr(template);
+end;
+
+Function newLineEditTemplate;
+var
+    template : lineEditTemplatePtr;
+begin
+    { template := lineEditTemplatePtr(EZNew(32)); }
+    new(template);
+ 
+    with template^ do
+    begin
+        pCount          := 8;
+        ID              := inID;
+        boundsRect      := inRect;
+        procRef         := cEditLineControl;
+        flag            := ord(ord4(inFlag) & ord4($0080));
+        moreFlags       := ord(ord4(inMoreFlags) &
+                                   ord4($7003)       |
+                                   ord4($7000));
+        refCon          := inRefCon;
+        maxSize         := inMaxSize;
+        defaultRef      := ord4(inDefaultRef);
+    end;
+ 
+    newLineEditTemplate := ptr(template);
+end;
+
+Function newListTemplate;
+var
+    template : listTemplatePtr;
+begin
+    { template := listTemplatePtr(EZNew(50)); }
+    new(template);
+ 
+    with template^ do
+    begin
+        pCount          := 14;
+        ID              := inID;
+        boundsRect      := inRect;
+        procRef         := cListControl;
+        flag            := ord(ord4(inFlag) & ord4($0080));
+        moreFlags       := ord(ord4(inMoreFlags) &
+                                   ord4($140f)       |
+                                   ord4($1400));
+        refCon          := inRefCon;
+        listSize        := inListSize;
+        listView        := inListView;
+        listType        := ord(ord4(inListType) & ord4($0007));
+        listStart       := inListStart;
+        listDraw        := inListDraw;
+        listMemHeight   := inListMemHeight;
+        listMemSize     := inListMemSize;
+        listRef         := ord4(inListRef);
+        colorRef        := ord4(inColorRef);
+ 
+        If inColorRef <> Nil then
+            pCount := 15;
+    end;
+ 
+    newListTemplate := ptr(template);
+end;
+
+Function newPictureTemplate;
+var
+    template : pictureTemplatePtr;
+begin
+    { template := pictureTemplatePtr(EZNew(30)); }
+    new(template);
+ 
+    with template^ do
+    begin
+        pCount          := 7;
+        ID              := inID;
+        boundsRect      := inRect;
+        procRef         := cPictureControl;
+        flag            := ord(ord4(inFlag) & ord4($ff80));
+        moreFlags       := ord(ord4(inMoreFlags) &
+                                   ord4($1003)       |
+                                   ord4($1000));
+        refCon          := inRefCon;
+        pictureRef      := ord4(inPictureRef);
+    end;
+ 
+    newPictureTemplate := ptr(template);
+end;
+
+Function newPopUpTemplate;
+var
+    template : popUpTemplatePtr;
+begin
+    { template := popUpTemplatePtr(EZNew(38)); }
+    new(template);
+ 
+    with template^ do
+    begin
+        pCount          := 9;
+        ID              := inID;
+        boundsRect      := inRect;
+        procRef         := cPopUpControl;
+        flag            := ord(ord4(inFlag) & ord4($ffff));
+        moreFlags       := ord(ord4(inMoreFlags) &
+                                   ord4($301f)       |
+                                   ord4(fCtlProcRefNotPtr));
+        refCon          := inRefCon;
+        titleWidth      := inTitleWidth;
+        menuRef         := ord4(inMenuRef);
+        initialValue    := inInitialValue;
+        colorRef        := ord4(inColorRef);
+ 
+        If inColorRef <> Nil then
+            pCount := 10;
+    end;
+ 
+    newPopUpTemplate := ptr(template);
+end;
+
+Function newRadioButtonTemplate;
+var
+    template : checkOrRadioTemplatePtr;
+begin
+    { template := checkOrRadioTemplatePtr(EZNew(42)); }
+    new(template);
+ 
+    with template^ do
+    begin
+        pCount                := 8;
+        ID                    := inID;
+        boundsRect            := inRect;
+        procRef               := cRadioControl;
+        flag                  := ord(ord4(inFlag) & ord4($0080));
+        moreFlags             := ord(ord4(inMoreFlags) &
+                                         ord4($300f)       |
+                                         ord4($1000));
+        refCon                := inRefCon;
+        titleRef              := ord4(inTitleRef);
+        initialValue          := inInitialValue;
+        colorTblRef           := ord4(inColorTableRef);
+        keyEquiv.key1         := inKeyEquivalent^.key1;
+        keyEquiv.key2         := inKeyEquivalent^.key2;
+        keyEquiv.keyModifiers := inKeyEquivalent^.mods;
+        keyEquiv.keyCareBits  := inKeyEquivalent^.modsCharBits;
+ 
+        If inColorTableRef <> Nil then
+            pCount      := 9;
+ 
+        If inKeyEquivalent <> Nil then
+            pCount      := 10;
+    end;
+ 
+    newRadioButtonTemplate := ptr(template);
+end;
+
+Function newScrollBarTemplate;
+var
+    template : scrollBarTemplatePtr;
+begin
+    { template := scrollBarTemplatePtr(EZNew(36)); }
+    new(template);
+ 
+    with template^ do
+    begin
+        pCount          := 9;
+        ID              := inID;
+        boundsRect      := inRect;
+        procRef         := cScrollBarControl;
+        flag            := ord(ord4(inFlag) & ord4($009f));
+        moreFlags       := ord(ord4(inMoreFlags) &
+                                   ord4($100c)       |
+                                   ord4($1000));
+        refCon          := inRefCon;
+        maxSize         := inMaxSize;
+        viewSize        := inViewSize;
+        initialValue    := inInitialValue;
+        colorTblRef     := ord4(inColorTableRef);
+ 
+        If inColorTableRef <> Nil then
+            pCount := 10;
+    end;
+ 
+    newScrollBarTemplate := ptr(template);
+end;
+
+Function newGrowBoxTemplate;
+var
+    template : growBoxTemplatePtr;
+begin
+    { template := growBoxTemplatePtr(EZNew(30)); }
+    new(template);
+ 
+    with template^ do
+    begin
+        pCount          := 6;
+        ID              := inID;
+        boundsRect      := inRect;
+        procRef         := cGrowControl;
+        flag            := ord(ord4(inFlag) & ord4($0081));
+        moreFlags       := ord(ord4(inMoreFlags) &
+                                   ord4($100c)       |
+                                   ord4($1000));
+        refCon          := inRefCon;
+        colorRef        := ord4(inColorTableRef);
+ 
+        If inColorTableRef <> Nil then
+            pCount := 7;
+    end;
+ 
+    newGrowBoxTemplate := ptr(template);
+end;
+
+Function newStatTextTemplate;
+var
+    template : statTextTemplatePtr;
+begin
+    { template := statTextTemplatePtr(EZNew(34)); }
+    new(template);
+ 
+    with template^ do
+    begin
+        pCount          := 7;
+        ID              := inID;
+        boundsRect      := inRect;
+        procRef         := cStatTextControl;
+        flag            := ord(ord4(inFlag) & ord4($0083));
+        moreFlags       := ord(ord4(inMoreFlags) &
+                                   ord4($1003)       |
+                                   ord4($1000));
+        refCon          := inRefCon;
+        textRef         := ord4(inTextRef);
+        textSize        := inTextSize;
+        just            := inJust;
+ 
+        If inTextSize <> 0 then
+            pCount := 8;
+ 
+        If inJust <> 0 then
+            pCount := 9;
+    end;
+ 
+    newStatTextTemplate := ptr(template);
+end;
+
+Function newEditTextTemplate;
+var
+    template : editTextTemplatePtr;
+begin
+    { template := editTextTemplatePtr(EZNew(86)); }
+    new(template);
+ 
+    with template^ do
+    begin
+        pCount          := 23;
+        controlID       := inID;
+        boundsRect      := inRect;
+        procRef         := cEditTextControl;
+        flags           := ord(ord4(inFlag) &
+                                   ord4($0080));
+        moreFlags       := ord(ord4(inMoreFlags) &
+                                   ord4($7c0f)       |
+                                   ord4($7400));
+        refCon          := inRefCon;
+        textFlags       := ord4(ord4(inTextFlags) &
+                                ord4($7fb80000)   |
+                                ord4($40000000));
+        indentRect      := inIndentRect;
+        vertBar         := ord4(inVertBar);
+        vertAmount      := inVertAmount;
+        horzBar         := ord4(nil);
+        horzAmount      := 0;
+        styleRef        := ord4(inStyleRef);
+        textDescriptor  := inTextDescriptor;
+        textRef         := ord4(inTextRef);
+        textLength      := inTextLength;
+        maxChars        := inMaxChars;
+        maxLines        := 0;
+        maxCharsPerLine := 0;
+        maxHeight       := 0;
+        colorRef        := ord4(inColorTableRef);
+        drawMode        := inDrawMode;
+        filterProcPtr   := inFilterProcPtr;
+    end;
+ 
+    newEditTextTemplate := ptr(template);
+end;
+
+{----------------------------------------------------------------------------}
+{ These routines are used internally by EZDialogEvent and EZAnyEvent.        }
+{----------------------------------------------------------------------------}
+
+Function EZHandleKeyEvent(EventRec            : eventRecord;
+                         HandleDefaultButton : Boolean) : longint;
+const
+    CutKey      =  88; { X key       }
+    PasteKey    =  86; { V key       }
+    CopyKey     =  67; { C key       }
+    DeleteKey   = 127; { Delete key  }
+    
+var
+    Key             : Integer;
+    theControl      : ctlRecHndl;
+    itemHit         : longint;
+    EventReceived   : boolean;
+ 
+    Function EZProcessReturnKey : longint;
+    var
+        thisControl : ctlRecHndl;
+        thisPort    : grafPortPtr;
+        itemHit     : longint;
+    begin
+        thisPort := FrontWindow;
+        itemHit := 0;
+        if thisPort <> Nil then
+        begin
+            thisControl := thisPort^.wControl;
+     
+            While (thisControl <> Nil) and
+                  (itemHit = 0) do
+            begin
+                if longint(thisControl^^.ctlProc) = cSimpleButtonControl then
+                begin
+                    if ((thisControl^^.ctlFlag & $0083) = simpBRound) and
+                    (thisControl^^.ctlHilite <> inactiveHilite)    then
+                    begin
+                        HiliteControl(simpleButton, thisControl);
+                        itemHit := GetCtlID(thisControl);
+                        HiliteControl(noHilite, thisControl);
+                    end;
+                end;
+     
+                thisControl := thisControl^^.ctlNext;
+            end;
+        end;
+     
+        EZProcessReturnKey := itemHit;
+    end;
+ 
+    Function EZHandleTextEditKey(theControl : ctlRecHndl;
+                                 EventRec   : eventRecord) : longint;
+    var
+        Key                 : Integer;
+        SendEventJunk       : boolean;
+    begin
+        Key := ConvL2I(EventRec.eventMessage).lsw;
+        
+        If (Key in [3,4,6,8,10,11,13,21,22,24,25,32..127]) or
+           ((EventRec.eventModifiers & (controlKey | optionKey)) <> 0) then
+        begin
+            If (EventRec.eventModifiers & appleKey) = appleKey
+            then
+                case (Key & $df) of
+                    CutKey      : TECut(Nil);
+                    PasteKey    : TEPaste(Nil);
+                    CopyKey     : TECopy(Nil);
+                    DeleteKey   : TEClear(Nil);
+                    otherwise   : SendEventJunk := SendEventToCtl(True,
+                                                                  Nil, 
+                                                                  EventRec);
+                end
+            else
+                SendEventJunk := SendEventToCtl(True, Nil, EventRec);
+        end;
+        
+        EZHandleTextEditKey := GetCtlID(theControl);
+    end;
+    
+    Function EZHandleLineEditKey(theControl : ctlRecHndl;
+                                 EventRec   : eventRecord) : longint;
+    var
+        Key         : Integer;
+        leControl   : leRecHndl;
+        leType      : longint;
+
+        Function validKey : Boolean;
+        begin
+            If ((leType = lineEditAllKeys)          and
+                ((Key in [6,8,21,24,25,32..127])    or
+                 ((EventRec.eventModifiers & (controlKey | optionKey)) <> 0)))
+            or
+               ((leType = lineEditAlphaNumeric)     and
+                (Key in [6,8,21,24,25,32..127]))
+            or
+               ((leType = lineEditAlphabetic)       and
+                (Key in [6,8,21,24,25,65..90,97..122,127]))
+            or
+               ((leType = lineEditNumeric)          and
+                (Key in [6,8,21,24,25,48..57,127])  or
+                ((Key in [67,86,88,99,118,120])   and
+                 ((EventRec.eventModifiers & appleKey) = appleKey)))
+            or
+               ((leType = lineEditPathname)         and
+                (Key in [6,8,21,24,25,46,58,48..57,65..90,97..122,127]))
+            then
+                validKey := True
+            else
+                validKey := False;
+        end;
+
+    begin
+        leControl := leRecHndl(theControl^^.ctlData);
+        leType := theControl^^.ctlRefCon;
+        Key := ConvL2I(EventRec.eventMessage).lsw;
+     
+        If validKey then
+        begin
+            If (EventRec.eventModifiers & appleKey) = appleKey
+            then
+                case (Key & $df) of
+                    CutKey    : LECut(leControl);
+                    PasteKey  : LEPaste(leControl);
+                    CopyKey   : LECopy(leControl);
+                    DeleteKey : LEDelete(leControl);
+                    otherwise : LEKey(Key,
+                                      EventRec.eventModifiers,
+                                      leControl);
+                end
+            else
+                LEKey(Key, EventRec.eventModifiers, leControl);
+        end;
+     
+        EZHandleLineEditKey := GetCtlID(theControl);
+    end;   
+   
+begin
+    Key := ConvL2I(EventRec.eventMessage).lsw;
+ 
+    theControl := FindTargetCtl;
+        { Determine which control the cut/paste is for }
+ 
+    If (Key = Return)      and 
+       HandleDefaultButton and
+       ((eventRec.eventModifiers & keyPad) = keyPad)
+    then
+        itemHit := EZProcessReturnKey
+    else
+        If theControl <> Nil  { If there is a control capable of taking this }
+        then                  { operation ...                                }
+            begin
+                If longint(theControl^^.ctlProc) = cEditLineControl
+                then
+                    itemHit := EZHandleLineEditKey(theControl, EventRec)
+                else
+                    If longint(theControl^^.ctlProc) = cEditTextControl
+                    then
+                        itemHit := EZHandleTextEditKey(theControl, EventRec)
+                    else
+                        begin
+                            EventReceived := SendEventToCtl(False, Nil, EventRec);
+                            If EventReceived
+                            then
+                                begin
+                                    theControl := ctlRecHndl(EventRec.taskData2);
+                                    itemHit := GetCtlID(theControl);
+                                end
+                            else
+                                itemHit := 0;
+                        end;
+            end
+        else
+            itemHit := 0;
+ 
+    EZHandleKeyEvent := itemHit;
+end;
+
+Function EZHandleLineEditMenu(theControl : ctlRecHndl;
+                            EventRec   : eventRecord) : Longint;
+const
+    EditUndo            = 250;
+    EditCut             = 251;
+    EditCopy            = 252;
+    EditPaste           = 253;
+    EditClear           = 254;
+var
+    MenuNum     : integer;
+    leControl   : leRecHndl;
+begin
+    { We only actually do this if the target control is an Edit  }
+    { line control.                                              }
+ 
+    MenuNum := ConvL2I(EventRec.TaskData).lsw;
+ 
+    leControl := leRecHndl(theControl^^.ctlData);
+ 
+    case MenuNum of
+        EditCut         : LECut(leControl);
+        EditCopy        : LECopy(leControl);
+        EditPaste       : LEPaste(leControl);
+        EditClear       : LEDelete(leControl);
+        otherwise       : ;
+    end;
+ 
+    EZHandleLineEditMenu := GetCtlID(theControl);
+end;
+
+Function HandleTextEditMenu(theControl : ctlRecHndl;
+                            EventRec   : eventRecord) : Longint;
+const
+    EditUndo            = 250;
+    EditCut             = 251;
+    EditCopy            = 252;
+    EditPaste           = 253;
+    EditClear           = 254;
+var
+    MenuNum     : integer;
+begin
+    MenuNum := ConvL2I(EventRec.TaskData).lsw;
+ 
+    case MenuNum of
+        EditCut         : TECut(Nil);
+        EditCopy        : TECopy(Nil);
+        EditPaste       : TEPaste(Nil);
+        EditClear       : TEClear(Nil);
+        otherwise       : ;
+    end;
+ 
+    HandleTextEditMenu := GetCtlID(theControl);
+end;
+
+Function EZHandleControl(EventRec : eventRecord) : longint;
+var
+    ControlHit      : ctlRecHndl;
+    FindControlJunk : integer;
+begin
+     FindControlJunk := FindControl(ControlHit,
+                                    EventRec.eventWhere.h,
+                                    EventRec.eventWhere.v,
+                                    grafPortPtr(EventRec.TaskData));
+     If (FindControlJunk <> 0)
+     then
+         begin
+             EZHandleControl := GetCtlID(ControlHit);
+             If ToolError <> 0 then
+                 EZHandleControl := 0;
+         end
+     else
+         EZHandleControl := 0;
+end;
+
+Function HandleEditMenu(EventRec : eventRecord) : Longint;
+var
+    theControl  : ctlRecHndl;
+
+begin
+    theControl := FindTargetCtl;
+        { Determine which control the cut/paste is for }
+ 
+    If theControl <> Nil  { If there is a control capable of taking this }
+    then                  { operation ...                                }
+        begin
+            If longint(theControl^^.ctlProc) = cEditLineControl
+            then
+                HandleEditMenu := EZHandleLineEditMenu(theControl, EventRec)
+            else
+                If longint(theControl^^.ctlProc) = cEditTextControl then
+                    HandleEditMenu := HandleTextEditMenu(theControl, EventRec);
+        end
+    else
+        HandleEditMenu := 0;
+ 
+    HilIteMenu(False,ConvL2I(EventRec.TaskData).msw);
+        { Revert the menu back to normal }
+end;
+
+Function EZDialogEvent;
+var
+    Event               : Integer;
+    LastEvent           : EventRecord;
+    itemHit             : longint;
+
+begin
+    LastEvent.TaskMask := $001db006;
+            { %0000 0000 0001 1101 1011 0000 0000 0110 }
+ 
+    Event := TaskMaster($046e, LastEvent);  { Get an event                   }
+            { %0000 0100 0110 1110 }
+ 
+    Case Event of
+        keyDownEvt,
+        autoKeyEvt  :   itemHit := EZHandleKeyEvent(LastEvent, True);
+        wInControl  :   itemHit := EZHandleControl(LastEvent);
+        wInSpecial  :   itemHit := HandleEditMenu(LastEvent);
+        updateEvt   :   begin
+                            itemHit := Event;
+                            EZUpdateWindow(grafPortPtr(LastEvent.eventMessage));
+                        end;
+        otherwise       itemHit := 0;
+    end;
+ 
+    MultiClick := LastEvent.ClickCount;
+ 
+    EZDialogEvent := itemHit;           { Return the itemID of the control    }
+end;
+
+Function EZAnyEvent;
+var
+   Event               : Integer;
+   itemHit             : longint;
+
+begin
+    If CheckMenus
+    then
+        AnyEventRecord.TaskMask := $001dffff
+            { %0000 0000 0001 1101 1111 1111 1111 1111 }
+    else
+        AnyEventRecord.TaskMask := $001dfff6;
+            { %0000 0000 0001 1101 1111 1111 1111 0110 }
+ 
+    Event := TaskMaster($0f6e, AnyEventRecord);  { Get an event }
+            { %0000 1111 0110 1110 }
+ 
+    EventHandled := True;
+
+    Case Event of
+        keyDownEvt,
+        autoKeyEvt  :   itemHit := EZHandleKeyEvent(AnyEventRecord, False);
+        wInControl  :   itemHit := EZHandleControl(AnyEventRecord);
+        wInSpecial  :   itemHit := HandleEditMenu(AnyEventRecord);
+        wInMenuBar  :   itemHit := ord4(ConvL2I(AnyEventRecord.TaskData).lsw);
+        updateEvt   :   begin
+                            itemHit := Event;
+                            EZUpdateWindow(grafPortPtr(AnyEventRecord.eventMessage));
+                            EventHandled := False;
+                        end;
+        otherwise   :   begin
+                            itemHit := Event;
+                            EventHandled := False;
+                        end;
+    end;
+ 
+    EZAnyEvent := itemHit;
+end;
+
+Function EZDAEvent;
+var
+    Event               : Integer;
+    itemHit             : longint;
+begin
+    Event := TaskMasterDA(0, AnyEventRecord);   { Get an event }
+            { %0000 1111 0110 1110 }
+ 
+    EventHandled := True;
+
+    Case Event of
+        keyDownEvt,
+        autoKeyEvt  : itemHit := EZHandleKeyEvent(AnyEventRecord, False);
+        wInControl  : itemHit := EZHandleControl(AnyEventRecord);
+        wInSpecial  : itemHit := HandleEditMenu(AnyEventRecord);
+        wInMenuBar  : itemHit := ord4(ConvL2I(AnyEventRecord.TaskData).lsw);
+        otherwise   :   begin
+                            itemHit := Event;
+                            EventHandled := False;
+                        end;
+    end;
+ 
+    EZDAEvent := itemHit;
+end;
+
+Function EZNextMember;
+var
+   workCtlHandle   : ctlRecHndl;
+begin
+    workCtlHandle := GetCtlHandleFromId(Nil, inID);
+
+    EZNextMember := NextMember2(inItem, workCtlHandle);
+end;
+
+Procedure EZSelectMember;
+var
+    workCtlHandle   : ctlRecHndl;
+begin
+    workCtlHandle := GetCtlHandleFromId(Nil, inID);
+
+    SelectMember2(inItem, workCtlHandle);
+end;
+
+Procedure EZSortList;
+var
+    workCtlHandle   : ctlRecHndl;
+begin
+    workCtlHandle := GetCtlHandleFromId(Nil, inID);
+
+    SortList2(@EZListCompare, workCtlHandle);
+end;
+
+Procedure EZNewList;
+var
+    workCtlHandle   : ctlRecHndl;
+begin
+    workCtlHandle := GetCtlHandleFromId(Nil, inID);
+
+    NewList2(inDrawProc,
+             inStart,
+             inList,
+             0,
+             inSize,
+             workCtlHandle);
+
+    EZSortList(inID);
+
+    EZSelectMember(inSelect, inID);
+end;
+
+Function RadioButtonOn;
+var
+    workCtlHandle : ctlRecHndl;
+begin
+    workCtlHandle := GetCtlHandleFromID(Nil, inID);
+ 
+    RadioButtonOn := Boolean(getCtlValue(workCtlHandle));
+end;
+
+Function CheckBoxOn;
+var
+    workCtlHandle : ctlRecHndl;
+begin
+    workCtlHandle := GetCtlHandleFromID(Nil, inID);
+ 
+    CheckBoxOn := Boolean(getCtlValue(workCtlHandle));
+end;
+
+Procedure SetRadioButton;
+var
+    workCtlHandle : ctlRecHndl;
+begin
+    workCtlHandle := GetCtlHandleFromID(Nil, inID);
+ 
+    setCtlValue(inValue, workCtlHandle);
+end;
+
+Procedure SetCheckBox;
+var
+    workCtlHandle : ctlRecHndl;
+begin
+   workCtlHandle := GetCtlHandleFromID(Nil, inID);
+
+   setCtlValue(inValue, workCtlHandle);
+end;
+
+Procedure Deactivate;
+var
+    workCtlHandle : ctlRecHndl;
+begin
+    workCtlHandle := GetCtlHandleFromID(Nil, inID);
+ 
+    HiliteControl(inactiveHilite, workCtlHandle);
+end;
+
+Procedure Activate;
+var
+    workCtlHandle : ctlRecHndl;
+begin
+    workCtlHandle := GetCtlHandleFromID(Nil, inID);
+ 
+    HiliteControl(noHilite, workCtlHandle);
+end;
+
+Procedure EZDrawControls;
+begin
+    DrawControls(GetPort);
+end;
+
+end.

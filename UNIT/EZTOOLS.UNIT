@@ -1,0 +1,199 @@
+{----------------------------------------------------------------------------}
+{                              EZTOOLS.UNIT                                  }
+{                                                                            }
+{ This unit contains a number of tool related routines that can make life    }
+{ much easier on the application, in that they take care of the loading and  }
+{ unloading of the various tool sets.                                        }
+{                                                                            }
+{ Copyright 1989...End Of Time                                               }
+{ EZ-Soft                                                                    }
+{                                                                            }
+{ Written by: P.C. Easdown                                                   }
+{----------------------------------------------------------------------------}
+
+{$ keep 'EZTools' }
+Unit EZTools;
+
+interface
+
+Uses Common, QuickDrawII, ControlMgr, WindowMgr, ListMgr, lineEdit,
+     MenuMgr, ToolLocator;
+
+{$ libprefix 'int/' }
+USES EZConst, EZMisc;
+
+TYPE
+    startStopRecPtr         = ^startStopRecord;
+
+{----------------------------------------------------------------------------}
+{ EZStartDesk  Similar to the StartDesk routine in ORCA/Pascal, except that  }
+{ ~~~~~~~~~~~  it loads almost every tool in existance and requires the      }
+{ application to supply the master SCB, rather than a resolution value. This }
+{ is so that the application is able to set some of the other bits that have }
+{ been defined with version 3.1 of quickdraw.  The other major difference,   }
+{ is that the application is required to mainatin a pointer that is returned }
+{ from the function, so that it may pass it to EZEndDesk when shutting down. }
+{----------------------------------------------------------------------------}
+
+Function EZStartDesk(inMasterSCB  : Integer) : startStopRecPtr;
+
+{----------------------------------------------------------------------------}
+{ EZEndDesk  Will shut down all of the tools started by EZStartDesk.  This   }
+{ ~~~~~~~~~  procedure must be supplied with the startstop record pointer    }
+{ that was returned from EZStartDesk.                                        }
+{----------------------------------------------------------------------------}
+
+Procedure EZEndDesk(inStartStopRecord : startStopRecPtr);
+
+{----------------------------------------------------------------------------}
+{ EZStartDesk  Similar to the StartGraph routine in ORCA/Pascal, except that }
+{ ~~~~~~~~~~~  it loads quickdraw auxilliary and the event manager as well.  }
+{ The application must supply the master SCB, rather than a resolution value }
+{ so that the application is able to set some of the other bits that have    }
+{ been defined with version 3.1 of quickdraw.  The other major difference,   }
+{ is that the application is required to mainatin a pointer that is returned }
+{ from the function, so that it may pass it to EZEndGraph when shutting down }
+{----------------------------------------------------------------------------}
+
+Function EZStartGraph(inMasterSCB : Integer) : startStopRecPtr;
+
+{----------------------------------------------------------------------------}
+{ EZEndGraph  Will shut down all of the tools started by EZStartGraph.  This }
+{ ~~~~~~~~~~  procedure must be supplied with the startstop record pointer   }
+{ that was returned from EZStartGraph.                                       }
+{----------------------------------------------------------------------------}
+
+Procedure EZEndGraph(inStartStopRecord : startStopRecPtr);
+
+implementation
+
+Function EZStartDesk;
+var
+    EZStartStopRecord   : startStopRecPtr;
+begin
+    new(EZStartStopRecord);
+ 
+    With EZStartStopRecord^ do
+    begin
+        flags := 0;
+        videoMode := inMasterSCB;
+        numTools := 26;
+ 
+        toolArray[01].toolNumber := ToolLocator;
+        toolArray[01].minVersion := $0300;
+        toolArray[02].toolNumber := ADBToolSet;
+        toolArray[02].minVersion := $0201;
+        toolArray[03].toolNumber := TextToolSet;
+        toolArray[03].minVersion := $0201;
+        toolArray[04].toolNumber := MemoryManager;
+        toolArray[04].minVersion := $0300;
+        toolArray[05].toolNumber := SANEToolSet;
+        toolArray[05].minVersion := $0202;
+        toolArray[06].toolNumber := ResourceManager;
+        toolArray[06].minVersion := $0100;
+        toolArray[07].toolNumber := MiscToolSet;
+        toolArray[07].minVersion := $0300;
+        toolArray[08].toolNumber := Scheduler;
+        toolArray[08].minVersion := $0200;
+        toolArray[09].toolNumber := SystemLoader;
+        toolArray[09].minVersion := $0300;
+        toolArray[10].toolNumber := QuickDrawII;
+        toolArray[10].minVersion := $0301;
+        toolArray[11].toolNumber := QuickDrawIIAux;
+        toolArray[11].minVersion := $0301;
+        toolArray[12].toolNumber := EventManager;
+        toolArray[12].minVersion := $0300;
+        toolArray[13].toolNumber := WindowManager;
+        toolArray[13].minVersion := $0301;
+        toolArray[14].toolNumber := ControlManager;
+        toolArray[14].minVersion := $0301;
+        toolArray[15].toolNumber := MenuManager;
+        toolArray[15].minVersion := $0301;
+        toolArray[16].toolNumber := lineEditToolSet;
+        toolArray[16].minVersion := $0301;
+        toolArray[17].toolNumber := DialogManager;
+        toolArray[17].minVersion := $0302;
+        toolArray[18].toolNumber := SoundToolSet;
+        toolArray[18].minVersion := $0301;
+        toolArray[19].toolNumber := NoteSynthesizer;
+        toolArray[19].minVersion := $0104;
+        toolArray[20].toolNumber := StandardFile;
+        toolArray[20].minVersion := $0301;
+        toolArray[21].toolNumber := ScrapManager;
+        toolArray[21].minVersion := $0300;
+        toolArray[22].toolNumber := DeskManager;
+        toolArray[22].minVersion := $0302;
+        toolArray[23].toolNumber := ListManager;
+        toolArray[23].minVersion := $0301;
+        toolArray[24].toolNumber := FontManager;
+        toolArray[24].minVersion := $0301;
+        toolArray[25].toolNumber := PrintManager;
+        toolArray[25].minVersion := $0300;
+        toolArray[26].toolNumber := TextEditToolSet;
+        toolArray[26].minVersion := $0101;
+    end;
+ 
+    EZStartDesk := startStopRecPtr(StartUpTools(userID,
+                                                0,
+                                                EZStartStopRecord));
+end;
+
+Procedure EZEndDesk;
+begin
+    ShutDownTools(0,
+                  inStartStopRecord);
+end;
+
+Function EZStartGraph;
+const
+    black       = 0;
+    white320    = 15;
+    white640    = 3;
+var
+    EZStartStopRecord   : startStopRecPtr;
+begin
+    new(EZStartStopRecord);
+ 
+    With EZStartStopRecord^ do
+    begin
+        flags := 0;
+        videoMode := inMasterSCB;
+        numTools := 4;
+ 
+        toolArray[01].toolNumber := ToolLocator;
+        toolArray[01].minVersion := $0300;
+        toolArray[02].toolNumber := QuickDrawII;
+        toolArray[02].minVersion := $0301;
+        toolArray[03].toolNumber := QuickDrawIIAux;
+        toolArray[03].minVersion := $0301;
+        toolArray[04].toolNumber := EventManager;
+        toolArray[04].minVersion := $0300;
+    end;
+ 
+    EZStartGraph := startStopRecPtr(StartUpTools(userID,
+                                                 0,
+                                                 EZStartStopRecord));
+ 
+    If (inMasterSCB & scbColorMode) = mode640
+    then
+        begin
+            SetSolidPenPat(white640);
+            SetForeColor(white640);
+        end
+    else
+        begin
+            SetSolidPenPat(white320);
+            SetForeColor(white320)
+        end;
+ 
+    SetBackColor(black);
+    SetPenMode(modeOR);
+end;
+
+Procedure EZEndGraph;
+begin
+    ShutDownTools(0,
+                  inStartStopRecord);
+end;
+
+end.

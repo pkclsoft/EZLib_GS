@@ -1,0 +1,2162 @@
+{----------------------------------------------------------------------------}
+{                               EZDISK.UNIT                                  }
+{                                                                            }
+{ This unit contains disk specific routines, that may be of use to any       }
+{ application.                                                               }
+{                                                                            }
+{ Copyright 1989...End Of Time                                               }
+{ EZ-Soft                                                                    }
+{                                                                            }
+{ Written by: P.C. Easdown                                                   }
+{----------------------------------------------------------------------------}
+
+{$ keep 'EZDisk' }
+Unit EZDisk;
+
+interface
+
+Uses Common, QuickDrawII, GSOS, ControlMgr, WindowMgr, ToolLocator, MenuMgr,
+     MemoryMgr, LineEdit, ResourceMgr;
+
+{$ libprefix 'int/' }
+USES EZConst, EZMisc, EZControls, EZAlerts, EZWindows, EZLineEdit, EZString;
+
+type
+    fileHandlesType =   array [1..2] of handle;
+    fileHndlPtr     =   ^fileHandlesType;
+
+    devMemRec           =   record
+                                memPtr      :   pStringPtr;
+                                memFlag     :   byte;
+                                memValue    :   longint;
+                                memDevice   :   longint;
+                            end;
+    devMemRecPtr        =   ^DevMemRec;
+
+    devMemberList       =   array [1..100] of devMemRec;
+    devMemberListPtr    =   ^devMemberList;
+
+    emptyOptionListType = record
+                            inputLength  : integer;
+                            outputLength : integer;
+                            buffer       : byte;
+                          end;
+
+{----------------------------------------------------------------------------}
+{ ValidatePathName  This function takes a GS/OS pathname as input, and       }
+{ is through the ExpandPath call in order to determine it's validity, and to }
+{ convert all separators to the colon, in order to be more friendly to other }
+{ file systems. It returns the completed string in OutPath, and will convert }
+{ the string to uppercase if the Upper parameter is set to TRUE.             }
+{                                                                            }
+{ NOTE. If the input pathname is not a FULL pathname, then a separator is    }
+{       placed at it's start to turn it into a FULL pathname. In other words }
+{       DON'T use this routine if you want a partial pathname to be returned }
+{       as it WON'T.                                                         }
+{----------------------------------------------------------------------------}
+
+Function ValidatePathName(    InPath  : GSOSInString;
+                          var OutPath : GSOSOutString;
+                              Upper   : Boolean)       : Boolean;
+
+{----------------------------------------------------------------------------}
+{ MountVolume  As the name suggests, this function places a dialog on the    }
+{ ~~~~~~~~~~~  screen, asking the user to mount the specified volume. It may }
+{ be supplied a full pathname, or simply a volume name, as it first calls    }
+{ ValidatePathName to force the separators to be colons, and then strips off }
+{ all but the volume name before requesting the user to mount it.            }
+{                                                                            }
+{ This function returns FALSE if the volume was mounted successfully, or     }
+{ TRUE if the user elected to cancel the operation.                          }
+{                                                                            }
+{ NOTE. This function also returns TRUE if it had trouble when validating    }
+{       the input pathname.                                                  }
+{----------------------------------------------------------------------------}
+
+Function MountVolume(VolumeName : GSOSInString) : Boolean;
+
+{----------------------------------------------------------------------------}
+{ EZExistFile  This function may be used to determine whether the specified  }
+{ ~~~~~~~~~~~  file exists in the current system.  It returns TRUE if the    }
+{              file is found, and FALSE if not.                              }
+{----------------------------------------------------------------------------}
+
+Function EZExistFile(inPath : GSOSInString) : Boolean;
+
+{----------------------------------------------------------------------------}
+{ EZLoadFTypeFiles  This function will load the two file type information    }
+{ ~~~~~~~~~~~~~~~~  files (found in the icons directory on the boot volume)  }
+{                   into memory, allocating space for them.  It returns a    }
+{                   a pointer which must be passed back to the other like    }
+{                   routines, so that they may locate the two file type      }
+{                   information lists.                                       }
+{----------------------------------------------------------------------------}
+
+Function EZLoadFTypeFiles : ptr;
+
+{----------------------------------------------------------------------------}
+{ EZDisposeFTypeFiles  The pointer to the two file type information files is }
+{ ~~~~~~~~~~~~~~~~~~~  passed into this procedure, so that it may dispose of }
+{                      the memory they occupy.                               }
+{----------------------------------------------------------------------------}
+
+Procedure EZDisposeFTypeFiles(fileHandles    :   univ fileHndlPtr);
+
+{----------------------------------------------------------------------------}
+{ EZFileType  This function will take the supplied parameters, and will scan }
+{ ~~~~~~~~~~  the memory based file type information lists for a matching    }
+{             entry.  When one is found, the function returns a pointer to a }
+{             pascal string containing a description of the file.            }
+{----------------------------------------------------------------------------}
+
+Function EZFileType(inFileType  :   integer;
+                    inAuxType   :   longint;
+                    fileHandles :   univ fileHndlPtr) : pStringPtr;
+
+{----------------------------------------------------------------------------}
+{ EZGetDeviceList  This function will search the device list, for any that   }
+{ ~~~~~~~~~~~~~~~  match the specified mask and device type, and that are    }
+{                  online, placing any matches in a List Manager structure,  }
+{                  the address of which is passed in the first parameter.    }
+{----------------------------------------------------------------------------}
+
+Function EZGetDeviceList(inTheList      :   ptr;
+                         inDeviceMask   :   longint;
+                         inDeviceType   :   longint) : integer;
+
+{----------------------------------------------------------------------------}
+{ EZGetVolumeList  This function will search the device list, for any that   }
+{ ~~~~~~~~~~~~~~~  match the specified mask and device type, and that are    }
+{                  online, placing any matches in a List Manager structure,  }
+{                  the address of which is passed in the first parameter.    }
+{----------------------------------------------------------------------------}
+
+Function EZGetVolumeList(inTheList      :   ptr;
+                         inDeviceMask   :   longint;
+                         inDeviceType   :   longint) : integer;
+
+{----------------------------------------------------------------------------}
+{ EZGetDeviceTypeList  This function will search the device list, for any    }
+{ ~~~~~~~~~~~~~~~~~~~  that match the specified mask and device type, and    }
+{                      that are online, placing any matches in a List        }
+{                      Manager structure, the address of which is passed in  }
+{                      the first parameter.                                  }
+{----------------------------------------------------------------------------}
+
+Function EZGetDeviceTypeList(inTheList      :   ptr;
+                             inDeviceMask   :   longint;
+                             inDeviceType   :   longint) : integer;
+
+{----------------------------------------------------------------------------}
+{ EZDeviceIcon  This function takes as an input, the ID number of any GSOS   }
+{ ~~~~~~~~~~~~  device, and will return an icon number for use with the EZ   }
+{               file/device type icons.                                      }
+{----------------------------------------------------------------------------}
+
+Function EZDeviceIcon(deviceIDNumber : integer) : longint;
+
+{----------------------------------------------------------------------------}
+{ EZTranslateName  Will take a filename as input, and the file system ID of  }
+{ ~~~~~~~~~~~~~~~  a destination file system.  The routine will then attempt }
+{                  to convert the input filename into a format compatible    }
+{                  with the specified file system, allowing the user to edit }
+{                  the filename, or to tell the application to skip the file }
+{                  A true/false result is also returned indicating whether   }
+{                  the user elected to skip the file or not.                 }
+{----------------------------------------------------------------------------}
+
+Function EZTranslateName(var inName     :   FileNameString;
+                             fileSystem :   integer) : Boolean;
+
+{----------------------------------------------------------------------------}
+{ EZGetFileSystem  This routine will retrieve the file system ID of the      }
+{ ~~~~~~~~~~~~~~~  specified volume.  Note that the application may supply   }
+{                  a full pathname as the volume name, as the routine strips }
+{                  of everything except the volume name itself.              }
+{----------------------------------------------------------------------------}
+
+Function EZGetFileSystem(theVolume :   GSOSInString) : integer;
+
+{----------------------------------------------------------------------------}
+{ EZCopyFile  This function will copy the source file to the destination     }
+{ ~~~~~~~~~~  file.  If the destination file already exists, then it is      }
+{             deleted without prompting.  If any error occurs, then the copy }
+{             process is aborted, and an alert is displayed.  The return     }
+{             value indicates whether the copy process completed properly.   }
+{----------------------------------------------------------------------------}
+
+Function EZCopyFile(sourceFile   :   GSOSInString;
+                    destFile     :   GSOSInString) : Boolean;
+
+Procedure EZEjectDisk(deviceNumber  :   Integer);
+
+Function EZIsOnline(deviceNumber  :   integer) : Boolean;
+
+Function EZCheckDevice(deviceNumber       : integer;
+                       wantedVolume       : GSOSInString) : Boolean;
+
+Function EZNextDevice(startDevice, deviceType  :   integer) : Integer;
+
+Function EZPollDevices(inDeviceNumber : Integer;
+                       inDeviceID     : Integer) : Boolean;
+
+Function EZWaitForDisk(    inVolumeName     :   GSOSInString;
+                           inDeviceID       :   Integer;
+                       var outDeviceNumber  :   Integer;
+                           formatIfBad      :   Boolean;
+                           eraseExisting    :   Boolean) : Boolean;
+
+Function EZVerifyDisk(deviceNumber  :   integer) : Boolean;
+
+implementation
+
+var
+    messagePort         :   grafPortPtr;
+    theMessage          :   textBlock;
+
+    VDPort              :   grafPortPtr;
+    VDPercent           :   real;
+    EZRedPatternHandle  :   patternHandle;
+    EZRedPattern        :   patternPtr;
+
+Function ValidatePathName;
+var
+    ExpandParms : expandPathOSDCB;
+    path        : pString;
+    Count       : Integer;
+begin
+    OutPath.maxSize := GSOSNameLength + 4;
+ 
+    path := copy(InPath.theString, 1, InPath.size);
+ 
+    If (path[1] <> Separator) and
+       (path[1] <> '/') and
+       (path[1] <> '*') and
+       (not (path[1] in ['0'..'9'])) then
+       path := concat(Separator, path);
+ 
+    InPath.theString := path;
+    InPath.size := length(path);
+ 
+    with ExpandParms do
+    begin
+        pcount := 3;
+        inputPath := @InPath;
+        outputPath := @OutPath;
+ 
+        If Upper
+        then
+            flags := $8000
+        else
+            flags := $0000;
+    end;
+ 
+    ExpandPathGS(ExpandParms);
+ 
+    If ToolError <> 0
+    then
+        ValidatePathName := False
+    else
+        ValidatePathName := True;
+end;
+
+Function MountVolume;
+{ Returns True if the user elected to abort the operation. }
+var
+    GetInfoParms    :   getFileInfoOSDCB;
+    Mounted         :   boolean;
+    Msg             :   textBlock;
+    TmpString       :   pString;
+    Count           :   Integer;
+    AbortOperation  :   boolean;
+    GoodPath        :   GSOSOutString;
+begin
+    GoodPath.maxSize := GSOSNameLength + 4;
+ 
+    If ValidatePathName(VolumeName, GoodPath, False)
+    then
+        AbortOperation := False
+    else
+        AbortOperation := True;
+ 
+    If Not AbortOperation then
+    begin
+        with GetInfoParms do
+        begin
+            pcount := 2;
+            pathName := @VolumeName;
+        end;
+ 
+        TmpString := copy(GoodPath.theString.theString, 1, GoodPath.theString.size);
+ 
+        { Now strip off all but the volume name.                              }
+ 
+        Count := rindex(TmpString,Separator);
+ 
+        While Count > 1 do
+        begin
+            delete(TmpString, Count, Length(TmpString) - Count + 1);
+            Count := rindex(TmpString,Separator);
+        end;
+ 
+        VolumeName.theString := copy(TmpString,1,length(TmpString));
+        VolumeName.size := length(TmpString);
+ 
+        Mounted := False;
+ 
+        Msg := concat('46!Please insert the volume ',
+                      copy(VolumeName.theString, 1, VolumeName.size),
+                      '!^#0!#1');
+ 
+        { Check to see if the volume is already there before putting up the   }
+        { dialog.                                                             }
+        GetFileInfoGS(GetInfoParms);
+ 
+        If ToolError = 0 then
+            Mounted := True;
+ 
+        { Ok, keep putting the dialog up until the user either inserts the    }
+        { volume or selects the cancel button.                                }
+ 
+        while (Not Mounted) and
+              (Not AbortOperation) do
+        begin
+            If AlertWindow($0001,Nil,@Msg) = 1 then
+                AbortOperation := True;
+ 
+            If Not AbortOperation then
+            begin
+                GetFileInfoGS(GetInfoParms);
+ 
+                If ToolError = 0 then
+                    Mounted := True;
+            end;
+        end;
+    end;
+ 
+    MountVolume := AbortOperation;
+end;
+
+Function EZExistFile;
+var
+    GetInfoParms    :   getFileInfoOSDCB;
+    validPath       :   Boolean;
+    goodPath        :   GSOSOutString;
+begin
+    GoodPath.maxSize := GSOSNameLength + 4;
+
+    validPath := ValidatePathName(inPath, goodPath, False);
+
+    If validPath
+    then
+        begin
+            with GetInfoParms do
+            begin
+                pcount := 2;
+                pathName := @goodPath.theString.theString;
+            end;
+
+            GetFileInfoGS(GetInfoParms);
+
+            If ToolError = 0
+            then
+                EZExistFile := True
+            else
+                EZExistFile := False;
+        end
+    else
+        EZExistFile := False;
+end;
+
+Function EZLoadFTypeFiles;
+var
+    filename    :   GSOSInString;
+    fileHandles :   fileHndlPtr;
+
+    Function loadFile : handle;
+    var
+        openParams  :   openOSDCB;
+        readParams  :   readWriteOSDCB;
+        closeParams :   closeOSDCB;
+        theBuffer   :   handle;
+    begin
+        with openParams do
+        begin
+            pcount := 12;
+            pathName := @filename;
+            requestAccess := readEnableMask;
+            resourceNumber := 0;
+            optionList := Nil;
+        end;
+
+        OpenGS(openParams);
+
+        If ToolError = 0
+        then
+            begin
+                theBuffer := NewHandle(openParams.dataEOF, UserID, $0000, Nil);
+
+                with readParams do
+                begin
+                    pcount := 4;
+                    refNum := openParams.refNum;
+                    dataBuffer := theBuffer^;
+                    requestCount := openParams.dataEOF;
+                end;
+
+                ReadGS(readParams);
+
+                If ToolError <> 0 then
+                begin
+                    DisposeHandle(theBuffer);
+                    theBuffer := Nil;
+                end;
+
+                with closeParams do
+                begin
+                    pcount := 1;
+                    refNum := openParams.refNum;
+                end;
+
+                CloseGS(closeParams);
+
+                loadFile := theBuffer;
+            end
+        else
+            loadFile := Nil;
+    end;
+begin
+    { we need a small record to contain the two handles so that we can return }
+    { a pointer to them to the application.  the application will then pass   }
+    { this pointer back to these routines whenever it wants to manipulate the }
+    { file type lists.                                                        }
+
+    new(fileHandles);
+
+    { open the first file, and load it in. }
+    filename.theString := '*:Icons:FType.Main';
+    filename.size := 18;
+
+    fileHandles^[1] := loadFile;
+
+    If fileHandles^[1] <> Nil
+    then
+        begin
+            { only try and load second file if the first was loaded correctly. }
+            filename.theString := '*:Icons:FType.Aux';
+            filename.size := 17;
+
+            fileHandles^[2] := loadFile;
+
+            EZLoadFTypeFiles := pointer(fileHandles);
+        end
+    else
+        begin
+            dispose(fileHandles);
+            EZLoadFTypeFiles := Nil;
+        end;
+end;
+
+Procedure EZDisposeFTypeFiles;
+begin
+    If fileHandles^[1] <> Nil then
+        DisposeHandle(fileHandles^[1]);
+
+    If fileHandles^[2] <> Nil then
+        DisposeHandle(fileHandles^[2]);
+end;
+
+Function EZFileType;
+var
+    fileNumber  :   integer;
+    stringAdr   :   pStringPtr;
+
+    Function scanFTypeList(theBuffer : ptr) : pStringPtr;
+    type
+        listHeader  =   record
+                            unknown1        :   longint;
+                            numOfRecords    :   integer;
+                            unknown3        :   integer;
+                            recordLength    :   integer;
+                            offsetToFirst   :   integer;
+                        end;
+
+        recordType  =   record
+                            fileType        :   integer;
+                            auxType         :   longint;
+                            unknown1        :   integer;
+                            offset          :   integer;
+                        end;
+    var
+        curRecord   :   ^recordType;
+        header      :   ^listHeader;
+        recordNum   :   integer;
+        tmpPtr      :   pStringPtr;
+    begin
+        header := pointer(theBuffer);
+
+        tmpPtr := Nil;
+        recordNum := 1;
+
+        with header^ do
+        begin
+            curRecord := pointer(ord4(theBuffer) + ord4(offsetToFirst));
+
+            repeat
+                with curRecord^ do
+                begin
+                    if (fileType = inFileType) and
+                       (auxType = inAuxType) then
+                        tmpPtr := pointer(ord4(theBuffer) + ord4(offset));
+                end;
+
+                recordNum := recordNum + 1;
+                curRecord := pointer(ord4(curRecord) + ord4(recordLength));
+            until (recordNum = (numOfRecords + 1)) or
+                  (tmpPtr <> Nil);
+        end;
+
+        scanFTypeList := tmpPtr;
+    end;
+begin
+    fileNumber := 1;
+    stringAdr := Nil;
+
+    repeat
+        If fileHandles^[fileNumber] <> Nil then
+            stringAdr := scanFTypeList(fileHandles^[fileNumber]^);
+
+        fileNumber := fileNumber + 1;
+    until (fileNumber = 3) or
+          (stringAdr <> Nil);
+
+    EZFileType := stringAdr;
+end;
+
+Function EZDeviceIcon;
+var
+    theIcon : longint;
+begin
+    case deviceIDNumber of
+        DiskII              :   theIcon := ord4(Drive525);
+        FloppyDiskGeneric   :   theIcon := ord4(Drive525);
+        MFMFloppyDisk       :   theIcon := ord4(Drive525);
+        Profile5Meg         :   theIcon := ord4(HardDrive);
+        Profile10Meg        :   theIcon := ord4(HardDrive);
+        SCSIHardDisk        :   theIcon := ord4(HardDrive);
+        HardDiskGeneric     :   theIcon := ord4(HardDrive);
+        Disk3_5             :   theIcon := ord4(Disk35);
+        SCSICDRom           :   theIcon := ord4(CDRom);
+        RAMDisk             :   theIcon := ord4(RAMDrive);
+        ROMDisk             :   theIcon := ord4(RAMDrive);
+        FileServer          :   theIcon := ord4(FileServerType);
+        AppleTalkFileServer :   theIcon := ord4(FileServerType);
+        otherwise           :   theIcon := ord4(UnknownFileType);
+    end;
+
+    EZDeviceIcon := theIcon;
+end;
+
+Function EZGetDeviceList;
+var
+    DeviceNumber    : Integer;
+    MemberNumber    : Integer;
+    DevInfo         : dInfoOSDCB;
+    DeviceName      : GSOSOutString;
+    DevStatus       : dStatusOSDCB;
+    StatusRecord    : Record
+                        StatusWord  : Integer;
+                        TotalBlocks : LongInt;
+                      end;
+    Msg             : textBlock;
+    theList         : devMemberListPtr;
+    errorJunk       : boolean;
+begin
+    theList := devMemberListPtr(inTheList);
+
+    DeviceNumber := 1;
+    MemberNumber := 1;
+    DeviceName.maxSize := GSOSNameLength + 4;
+    errorJunk := False;
+ 
+    Repeat
+        With DevInfo do
+        begin
+            pcount := 8;
+            devNum := DeviceNumber;
+            devName := @DeviceName;
+        end;
+ 
+        DInfoGS(DevInfo);
+ 
+        If ToolError <> $11 { illegal device number } then
+            with DevInfo do
+            begin
+                If ToolError <> $00 then
+                begin
+                    Msg := concat('Unexpected error during block ',
+                                  'device search on device number ',
+                                  cnvis(DeviceNumber),'.',chr(return));
+                    errorJunk := ProdosError(ToolError, Msg, True);
+                end;
+ 
+                { A block device that isnt a ram or rom disk }
+                If ((characteristics & inDeviceMask) = inDeviceType) and
+                   Not errorJunk then
+                begin
+                    With DevStatus do
+                    begin
+                        pcount := 5;
+                        devNum := DeviceNumber;
+                        statusCode := 0;
+                        statusList := @StatusRecord;
+                        requestCount := 6;
+                    end;
+                    DStatusGS(DevStatus);
+ 
+                    If (StatusRecord.StatusWord & $0010) = $0010 then
+                    begin
+                        If theList^[MemberNumber].memPtr = Nil then
+                            new(theList^[MemberNumber].memPtr);
+
+                        With theList^[MemberNumber], DeviceName.theString do
+                        begin
+                            memPtr^ := copy(theString, 1, size);
+                            memFlag := 0;
+                            memDevice := ord4(deviceID);
+
+                            memValue := EZDeviceIcon(deviceID);
+                        end;
+ 
+                        MemberNumber := MemberNumber + 1;
+                    end;
+                end;
+            end;
+ 
+        DeviceNumber := DeviceNumber + 1;
+    Until (ToolError = $11) or
+          errorJunk         or
+          (MemberNumber = 101);
+ 
+    EZGetDeviceList := MemberNumber - 1;
+end;
+
+Function EZGetVolumeList;
+var
+    DeviceNumber    : Integer;
+    MemberNumber    : Integer;
+    volumeParms     : volumeOSDCB;
+    DevInfo         : dInfoOSDCB;
+    DeviceName      : GSOSOutString;
+    volumeName      : GSOSOutString;
+    DevStatus       : dStatusOSDCB;
+    StatusRecord    : Record
+                        StatusWord  : Integer;
+                        TotalBlocks : LongInt;
+                      end;
+    Msg             : textBlock;
+    theList         : devMemberListPtr;
+    errorJunk       : boolean;
+begin
+    theList := devMemberListPtr(inTheList);
+
+    DeviceNumber := 1;
+    MemberNumber := 1;
+    DeviceName.maxSize := GSOSNameLength + 4;
+    errorJunk := False;
+ 
+    Repeat
+        With DevInfo do
+        begin
+            pcount := 8;
+            devNum := DeviceNumber;
+            devName := @DeviceName;
+        end;
+ 
+        DInfoGS(DevInfo);
+ 
+        If ToolError <> $11 { illegal device number } then
+            with DevInfo do
+            begin
+                If ToolError <> $00 then
+                begin
+                    Msg := concat('Unexpected error during block ',
+                                  'volume search on device number ',
+                                  cnvis(DeviceNumber),'.',chr(return));
+                    errorJunk := ProdosError(ToolError, Msg, True);
+                end;
+ 
+                If ((characteristics & inDeviceMask) = inDeviceType) and
+                   Not errorJunk then
+                begin
+                    With DevStatus do
+                    begin
+                        pcount := 5;
+                        devNum := DeviceNumber;
+                        statusCode := 0;
+                        statusList := @StatusRecord;
+                        requestCount := 6;
+                    end;
+                    DStatusGS(DevStatus);
+ 
+                    If (StatusRecord.StatusWord & $0010) = $0010 then
+                    begin
+                        If theList^[MemberNumber].memPtr = Nil then
+                            new(theList^[MemberNumber].memPtr);
+
+                        volumeName.maxSize := GSOSNameLength + 4;
+
+                        with volumeParms do
+                        begin
+                            pcount := 2;
+                            devName := @DeviceName.theString;
+                            volName := @volumeName;
+                        end;
+
+                        VolumeGS(volumeParms);
+
+                        If ToolError = 0 then
+                        begin
+                            With theList^[MemberNumber], volumeName.theString do
+                            begin
+                                memPtr^ := copy(theString, 1, size);
+                                memFlag := 0;
+                                memDevice := ord4(DeviceNumber);
+
+                                memValue := EZDeviceIcon(deviceID);
+                            end;
+ 
+                            MemberNumber := MemberNumber + 1;
+                        end;
+                    end;
+                end;
+            end;
+ 
+        DeviceNumber := DeviceNumber + 1;
+    Until (ToolError = $11) or
+          errorJunk         or
+          (MemberNumber = 101);
+ 
+    EZGetVolumeList := MemberNumber - 1;
+end;
+
+Function EZGetDeviceTypeList;
+var
+    DeviceNumber    : Integer;
+    MemberNumber    : Integer;
+    DevInfo         : dInfoOSDCB;
+    DeviceName      : GSOSOutString;
+    Msg             : textBlock;
+    theList         : devMemberListPtr;
+    errorJunk       : boolean;
+    found           : boolean;
+    searchMember    : integer;
+    descrHandle     : handle;
+begin
+    theList := devMemberListPtr(inTheList);
+
+    DeviceNumber := 1;
+    MemberNumber := 1;
+    DeviceName.maxSize := GSOSNameLength + 4;
+    errorJunk := False;
+ 
+    Repeat
+        With DevInfo do
+        begin
+            pcount := 8;
+            devNum := DeviceNumber;
+            devName := @DeviceName;
+        end;
+ 
+        DInfoGS(DevInfo);
+ 
+        If ToolError <> $11 { illegal device number } then
+            with DevInfo do
+            begin
+                If ToolError <> $00 then
+                begin
+                    Msg := concat('Unexpected error during block ',
+                                  'device type search on device number ',
+                                  cnvis(DeviceNumber),'.',chr(return));
+                    errorJunk := ProdosError(ToolError, Msg, True);
+                end;
+ 
+                { A block device that isnt a ram or rom disk }
+                If ((characteristics & inDeviceMask) = inDeviceType) and
+                   Not errorJunk then
+                begin
+                    found := False;
+                    searchMember := 1;
+
+                    while not found and
+                          (searchMember < MemberNumber) do
+                    begin
+                        If deviceID = ord(theList^[searchMember].memDevice)
+                        then
+                            found := true
+                        else
+                            searchMember := searchMember + 1;
+                    end;
+
+                    If not found then
+                    begin
+                        descrHandle := LoadResource(rPString,
+                                                    ord4(deviceID + ord4(1)));
+
+                        With theList^[MemberNumber] do
+                        begin
+                            memPtr := pointer(descrHandle^);
+                            memFlag := 0;
+                            memDevice := ord4(deviceID);
+                            memValue := EZDeviceIcon(deviceID);
+                        end;
+ 
+                        MemberNumber := MemberNumber + 1;
+                    end;
+                end;
+            end;
+ 
+        DeviceNumber := DeviceNumber + 1;
+    Until (ToolError = $11) or
+          errorJunk         or
+          (MemberNumber = 101);
+ 
+    EZGetDeviceTypeList := MemberNumber - 1;
+end;
+
+Function EZTranslateName;
+const
+    lineEditItem        =   $7001;
+    skipItem            =   $7002;
+    translateItem       =   $7003;
+    acceptItem          =   $7004;
+    NullItem            =   $0005;
+
+    offset              =   $7000;
+var
+    TNPort              :   grafPortPtr;
+
+    itemHit             :   longint;
+    NumOfClicks         :   integer;
+ 
+    TmpRect             :   rect;
+    DestRect            :   rect;
+    TextRect            :   rect;
+ 
+    ctlList             :   array [1..NullItem] of ptr;
+ 
+    NewControl2Junk     :   ctlRecHndl;
+
+    Message             :   textBlock;
+
+    Translation         :   pString;
+
+    maxLength           :   integer;
+
+    cautionIconHandle   :   handle;
+    cautionIconPtr      :   ^iconRec;
+
+    Procedure TranslateName;
+    var
+        inCount         :   integer;
+        outCount        :   integer;
+        lastChar        :   char;
+        wordSeparator   :   char;
+
+        Function charNotValid(theChar   :   char) : boolean;
+        begin
+            charNotValid := True;
+
+            case fileSystem of
+                fsProDOS        :   If theChar in ['0'..'9','A'..'Z','a'..'z','.'] then
+                                        charNotValid := False;
+                fsAppleShare    :   If theChar in [' '..'9',';'..'~'] then
+                                        charNotValid := False;
+                fsHighSierra    :   If theChar in ['0'..'9','A'..'Z','_'] then
+                                        charNotValid := False;
+                otherwise       :   If theChar in ['0'..'9','A'..'Z','a'..'z','.'] then
+                                        charNotValid := False;
+            end;
+        end;
+    begin
+        inCount := 1;
+        outCount := 1;
+        lastChar := char(1);
+
+        case fileSystem of
+            fsProDOS        :   begin
+                                    maxLength := 15;
+                                    wordSeparator := '.';
+                                end;
+            fsAppleShare    :   begin
+                                    maxLength := 31;
+                                    wordSeparator := '.';
+                                end;
+            fsHighSierra    :   begin
+                                    maxLength := 28;
+                                    wordSeparator := '_';
+                                end;
+            otherwise       :   begin
+                                    maxLength := 15;
+                                    wordSeparator := '.';
+                                end;
+        end;
+
+        while (inCount <= inName.SLength) and
+              (outCount <= maxLength)     do
+        begin
+            If fileSystem = fsHighSierra then
+                inName.SText[inCount] := Upper(inName.SText[inCount]);
+
+            If charNotValid(inName.SText[inCount])
+            then
+                Translation[outCount] := wordSeparator
+            else
+                Translation[outCount] := inName.SText[inCount];
+
+            If (Translation[outCount] <> lastChar)
+            then
+                outCount := outCount + 1
+            else
+                If lastChar <> wordSeparator then
+                    outCount := outCount + 1;
+
+            lastChar := Translation[outCount - 1];
+
+            inCount := inCount + 1;
+        end;
+
+        if fileSystem = fsProDOS then
+            If not(Translation[1] in ['A'..'Z','a'..'z']) then
+                insert('A',Translation,1);
+
+        if outCount > maxLength then
+            outCount := maxLength;
+
+        Translation[0] := chr(outCount);
+
+        if fileSystem = fsHighSierra then
+            insert('.;1', Translation, length(Translation) + 1);
+    end;
+
+begin
+    with tmpRect do
+    begin
+        h1 := 140;
+        h2 := 500;
+        v1 := 50;
+        v2 := 149;
+    end;
+
+    TNPort := startupEZDialog(tmpRect, @EZDrawControls);
+
+    SetPort(TNPort);
+
+    Message := concat('The file/folder name "',
+                      copy(inName.SText,1,inName.SLength),
+                      '" is unacceptable to the destination file system.');
+
+    cautionIconHandle := LoadResource(rIcon, 1);
+
+    If ToolError = 0
+    then
+        begin
+            cautionIconPtr := pointer(cautionIconHandle^);
+            DrawIcon(cautionIconPtr^, $0f00, 10, 10);
+
+            with tmpRect do
+            begin
+                h1 := 100;
+                h2 := 350;
+                v1 := 10;
+                v2 := 40;
+            end;
+        end
+    else
+        begin
+            with tmpRect do
+            begin
+                h1 := 10;
+                h2 := 350;
+                v1 := 10;
+                v2 := 40;
+            end;
+
+            Message := concat('Res wouldn`t load, error = ',
+                              cnvis(ToolError));
+        end;
+
+    LETextBox2(@Message, length(Message), tmpRect, 2);
+
+    moveTo(10,59);
+    DrawString(@'Change name to');
+
+    with DestRect do
+    begin
+        h1 := 120;
+        v1 := 50;
+        h2 := 350;
+        v2 := v1 + lineEditHeight;
+    end;
+
+    TranslateName;
+
+    ctlList[lineEditItem - offset] := newlineEditTemplate(lineEditItem,
+                                                          DestRect,
+                                                          0,
+                                                          0,
+                                                          0,
+                                                          maxLength,
+                                                          @Translation);
+
+    with TmpRect do
+    begin
+        h1 := 10;
+        h2 := 0;
+        v1 := 80;
+        v2 := 0;
+    end;
+
+    ctlList[skipItem - offset] := newButtonTemplate(skipItem,
+                                                    TmpRect,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    @'Skip File',
+                                                    Nil,
+                                                    Nil);
+
+    with TmpRect do
+    begin
+        h1 := 120;
+        h2 := 0;
+        v1 := 80;
+        v2 := 0;
+    end;
+
+    ctlList[translateItem - offset] := newButtonTemplate(translateItem,
+                                                         TmpRect,
+                                                         0,
+                                                         0,
+                                                         0,
+                                                         @'Translate',
+                                                         Nil,
+                                                         Nil);
+
+    with TmpRect do
+    begin
+        h1 := 268;
+        h2 := 0;
+        v1 := 80;
+        v2 := 0;
+    end;
+
+    ctlList[acceptItem - offset] := newButtonTemplate(acceptItem,
+                                                      TmpRect,
+                                                      1,
+                                                      0,
+                                                      0,
+                                                      @'Accept',
+                                                      Nil,
+                                                      Nil);
+
+    ctlList[NullItem] := Nil;
+
+    NewControl2Junk := NewControl2(TNPort, 3, @ctlList);
+
+    itemHit := 0;
+
+    Repeat
+        itemHit := EZDialogEvent(NumOfClicks);
+
+        If itemHit = translateItem then
+        begin
+            translateName;
+            setLineEditText(Translation, True, lineEditItem);
+        end;
+    until (itemHit = skipItem) or
+          (itemHit = acceptItem);
+
+    If itemHit = acceptItem
+    then
+        begin
+            getLineEditText(lineEditItem, Translation);
+            inName.ILength := FileNameLength + 4;
+            inName.SLength := length(Translation);
+            inName.SText := copy(Translation,1,length(Translation));
+
+            EZTranslateName := False;
+        end
+    else
+        EZTranslateName := True;
+
+    CloseWindow(TNPort);
+end;
+
+Function EZGetFileSystem;
+var
+    StartChar           : Integer;
+    TmpString           : pString;
+    DevNumParms         : getDevNumOSDCB;
+    VolumeName          : GSOSOutString;
+    DevInfo             : dInfoOSDCB;
+    DeviceNumber        : Integer;
+    DeviceName          : GSOSOutString;
+    VolumeParms         : volumeOSDCB;
+begin
+    TmpString := copy(theVolume.theString,1,theVolume.size);
+ 
+    StartChar := rindex(TmpString,Separator);
+ 
+    While StartChar > 1 do
+    begin
+        delete(TmpString, StartChar, Length(TmpString) - StartChar + 1);
+        StartChar := rindex(TmpString,Separator);
+    end;
+ 
+    VolumeName.maxSize := GSOSNameLength + 4;
+    VolumeName.TheString.theString := copy(TmpString,1,length(TmpString));
+    VolumeName.TheString.size := length(TmpSTring);
+ 
+    DevNumParms.pcount := 2;
+    DevNumParms.devName := @VolumeName.theString.size;
+ 
+    GetDevNumberGS(DevNumParms);
+
+    DeviceNumber := DevNumParms.devNum + 1;
+ 
+    DeviceName.maxSize := GSOSNameLength + 4;
+    DeviceName.theString.size := 0;
+    DeviceName.theString.theString := '';
+ 
+    DevInfo.pcount := 3;
+    DevInfo.devNum := DeviceNumber;
+    DevInfo.devName := @DeviceName;
+ 
+    DInfoGS(DevInfo);
+ 
+    VolumeParms.pcount := 5;
+    VolumeParms.devName := @DeviceName.theString;
+    VolumeParms.volName := @VolumeName;
+ 
+    VolumeGS(VolumeParms);
+
+    EZGetFileSystem := VolumeParms.fileSysID;
+end;
+
+Function EZCopyFile;
+type
+   { necessary because the one inside the GSOS.pas provided by Byteworks is wrong }
+   ezSetFileInfoOSDCB = record
+      pcount: integer;
+      pathName: gsosInStringPtr;
+      access: integer;
+      fileType: integer;
+      auxType: longint;
+      nullField1: integer;       {set this field to zero}
+      createDateTime: timefield;
+      modDateTime: timefield;
+      optionList: optionListPtr;
+      nullField2: longint;       {set this field to zero}
+      nullField3: longint;       {set this field to zero}
+      nullField4: longint;       {set this field to zero}
+      nullField5: longint;       {set this field to zero}
+      end;
+
+var
+    getInfoParms        :   getFileInfoOSDCB;
+    setInfoParms        :   ezSetFileInfoOSDCB;
+    openSourceParms     :   openOSDCB;
+    openDestParms       :   openOSDCB;
+    destroyParms        :   destroyOSDCB;
+    createParms         :   createOSDCB;
+    closeParms          :   closeOSDCB;
+    emptyOptionList     :   emptyOptionListType;
+    theOptionListLength :   integer;
+    oListLengthPtr      :   IntegerPtr;
+    trueOptionList      :   ptr;
+    oListHandle         :   handle;
+    errorCode           :   integer;
+    Msg                 :   textBlock;
+    fileSize            :   longint;
+
+    procedure EZSetFileInfoGS (var parms: ezSetFileInfoOSDCB); prodos ($2005);
+
+    Procedure transferData;
+    var
+        theBuffer       :   ptr;
+        bufferSize      :   longint;
+        readParms       :   readWriteOSDCB;
+    begin
+        theBuffer := EZNew($00010000);
+
+        With readParms do
+        begin
+            pcount := 4;
+            dataBuffer := theBuffer;
+        end;
+ 
+        While (fileSize > 0) and
+              (ErrorCode = 0) do
+        begin
+            If fileSize > $00010000
+            then
+                bufferSize := $00010000
+            else
+                bufferSize := fileSize;
+
+            readParms.refNum := openSourceParms.refNum;
+            readParms.requestCount := bufferSize;
+
+            ReadGS(readParms);
+            ErrorCode := ToolError;
+
+            If ErrorCode = 0 then
+            begin
+                readParms.refNum := openDestParms.refNum;
+                WriteGS(readParms);
+                ErrorCode := ToolError;
+            end;
+ 
+            fileSize := fileSize - bufferSize;
+        end;
+    end;
+        
+begin
+    ErrorCode := 0;
+
+    If not EZExistFile(sourceFile)
+    then
+        EZCopyFile := False
+    else
+        begin
+            with emptyOptionList do
+            begin
+                inputLength := $0004;
+                outputLength := $0000;
+            end;
+
+            with getInfoParms do
+            begin
+                pcount := 12;
+                pathName := @sourceFile;
+                optionList := @emptyOptionList;
+            end;
+
+            GetFileInfoGS(getInfoParms);
+
+            If (ToolError = $4f) then
+            begin
+                theOptionListLength := emptyOptionList.outputLength + 4;
+                trueOptionList := EZNew(theOptionListLength);
+                oListLengthPtr := integerPtr(trueOptionList);
+                oListLengthPtr^ := theOptionListLength;
+                with getInfoParms do
+                    optionList := Pointer(trueOptionList);
+
+                GetfileInfoGS(getInfoParms);
+                ErrorCode := ToolError;
+            end;
+
+            If ErrorCode = 0 then
+            begin
+                If EZExistFile(destFile) then
+                begin
+                    with setInfoParms do
+                    begin
+                        pcount := 2;
+                        pathName := @destfile;
+                        access := writeEnableMask | destroyEnableMask;
+                        nullField2 := 0;
+                        nullField3 := 0;
+                        nullField4 := 0;
+                        nullField5 := 0;
+                    end;
+
+                    EZSetFileInfoGS(setInfoParms);
+                    ErrorCode := ToolError;
+
+                    with destroyParms do
+                    begin
+                        pcount := 1;
+                        pathName := @destFile;
+                    end;
+
+                    DestroyGS(destroyParms);
+                    ErrorCode := ToolError;
+                end;
+
+                If ErrorCode = 0 then
+                begin
+                    with createParms do
+                    begin
+                        pcount := 7;
+                        pathName := @destFile;
+                        access := readEnableMask | writeEnableMask;
+                        fileType := getInfoParms.fileType;
+                        auxType := getInfoParms.auxType;
+                        storageType := getInfoParms.storageType;
+                        dataEOF := getInfoParms.dataEOF;
+                        resourceEof := getInfoParms.resourceEof;
+                    end;
+
+                    CreateGS(createParms);
+                    ErrorCode := ToolError;
+
+                    If (getInfoParms.dataEOF <> 0) and
+                       (ErrorCode = 0) then
+                    begin
+                        with openDestParms do
+                        begin
+                            pcount := 4;
+                            pathName := @destFile;
+                            requestAccess := writeEnableMask;
+                            resourceNumber := 0;
+                        end;
+
+                        OpenGS(openDestParms);
+
+                        with openSourceParms do
+                        begin
+                            pcount := 4;
+                            pathName := @sourceFile;
+                            requestAccess := readEnableMask;
+                            resourceNumber := 0;
+                        end;
+
+                        OpenGS(openSourceParms);
+
+                        fileSize := getInfoParms.dataEOF;
+
+                        transferData;
+
+                        closeParms.pcount := 1;
+                        closeParms.refNum := openSourceParms.refNum;
+
+                        CloseGS(closeParms);
+
+                        closeParms.refNum := openDestParms.refNum;
+
+                        CloseGS(closeParms);
+                    end;
+
+                    If (getInfoParms.resourceEof <> 0) and
+                       (ErrorCode = 0) then
+                    begin
+                        with openDestParms do
+                        begin
+                            pcount := 4;
+                            pathName := @destFile;
+                            requestAccess := writeEnableMask;
+                            resourceNumber := 1;
+                        end;
+
+                        OpenGS(openDestParms);
+                        ErrorCode := ToolError;
+
+                        If ErrorCode = 0 then
+                        begin
+                            with openSourceParms do
+                            begin
+                                pcount := 4;
+                                pathName := @sourceFile;
+                                requestAccess := readEnableMask;
+                                resourceNumber := 1;
+                            end;
+
+                            OpenGS(openSourceParms);
+                            ErrorCode := ToolError;
+
+                            fileSize := getInfoParms.resourceEof;
+
+                            transferData;
+
+                            closeParms.pcount := 1;
+                            closeParms.refNum := openSourceParms.refNum;
+
+                            CloseGS(closeParms);
+
+                            closeParms.refNum := openDestParms.refNum;
+
+                            CloseGS(closeParms);
+                        end;
+                    end;
+
+                    If ErrorCode = 0 then
+                    begin
+                        with setInfoParms do
+                        begin
+                            pcount := 8;
+                            pathName := @destFile;
+                            access := getInfoParms.access;
+                            fileType := getInfoParms.fileType;
+                            auxType := getInfoParms.auxType;
+                            nullField1 := 0;
+                            createDateTime := getInfoParms.createDateTime;
+                            modDateTime := getInfoParms.modDateTime;
+                            optionList := getInfoParms.optionList;
+                        end;
+
+                        EZSetFileInfoGS(setInfoParms);
+                    end;
+                end;
+            end;
+
+            oListHandle := findHandle(trueOptionList);
+            disposeHandle(oListHandle);
+        end;
+
+    If ErrorCode = 0
+    then
+        EZCopyFile := True
+    else
+        begin
+            Msg := concat('An error has occured while trying to copy the file ',
+                          sourceFile.theString, ' to ', destFile.theString, '.');
+            EZCopyfile := not ProdosError(ErrorCode, Msg, True);
+        end;
+end;
+
+Procedure EZEjectDisk;
+var
+    DCtrlParms  :   dStatusOSDCB;
+    Msg         :   textBlock;
+begin
+    With DCtrlParms do
+    begin
+        pcount := 5;
+        devNum := deviceNumber;
+        statusCode := dcEject;
+        statusList := @Msg;
+        requestCount := 0;
+    end;
+ 
+    DControlGS(DCtrlParms);
+end;
+
+Function EZIsOnline;
+var
+    DevStatus       : dStatusOSDCB;
+ 
+    StatusRecord    : Record
+                        StatusWord  : Integer;
+                        TotalBlocks : LongInt;
+                      end;
+begin
+    With DevStatus do
+    begin
+        pcount := 5;
+        devNum := DeviceNumber;
+        statusCode := dsDeviceStatus;
+        statusList := @StatusRecord;
+        requestCount := 6;
+    end;
+
+    DStatusGS(DevStatus);
+ 
+    If ((StatusRecord.StatusWord & $0010) = $0010) and
+       (ToolError = 0)
+    then
+        EZIsOnline := True
+    else
+        EZIsOnline := False;
+end;
+
+Function EZCheckDevice;
+var
+    dInfoParms  :   dInfoOSDCB;
+    deviceName  :   GSOSOutString;
+    volumeParms :   volumeOSDCB;
+    volumeName  :   GSOSOutString;
+    wanted      :   pString;
+    got         :   pString;
+begin
+    If EZIsOnline(deviceNumber)
+    then
+        begin
+            deviceName.maxSize := GSOSNameLength + 4;
+
+            with dInfoParms do
+            begin
+                pcount := 2;
+                devNum := deviceNumber;
+                devName := @deviceName;
+            end;
+
+            DInfoGS(dInfoParms);
+
+            volumeName.maxSize := GSOSNameLength + 4;
+
+            with volumeParms do
+            begin
+                pcount := 2;
+                devName := @deviceName.theString;
+                volName := @volumeName;
+            end;
+
+            VolumeGS(volumeParms);
+
+            with wantedVolume do
+                wanted := copy(theString,1,size);
+
+            with volumeName.theString do
+                got := copy(theString,1,size);
+
+            If got = wanted then
+                EZCheckDevice := true
+            else
+                EZCheckDevice := false;
+        end
+    else
+        EZCheckDevice := false;
+end;
+
+Function EZNextDevice;
+var
+    deviceNumber    :   Integer;
+    dInfoParms      :   dInfoOSDCB;
+    deviceName      :   GSOSOutString;
+    deviceFound     :   Boolean;
+    loopCount       :   Integer;
+begin
+    deviceName.maxSize := GSOSNameLength + 4;
+    deviceNumber := startDevice + 1;
+    deviceFound := False;
+    loopCount := 0;
+
+    with dInfoParms do
+    begin
+        pcount := 8;
+        devName := @deviceName;
+    end;
+
+    Repeat
+        dInfoParms.devNum := deviceNumber;
+
+        DInfoGS(dInfoParms);
+
+        If ToolError = $11
+        then
+            begin
+                deviceNumber := 1;
+                loopCount := loopCount + 1;
+            end
+        else
+            If ToolError <> 0
+            then
+                deviceNumber := deviceNumber + 1
+            else
+                If (dInfoParms.deviceID = deviceType) then
+                    deviceFound := True
+                else
+                    deviceNumber := deviceNumber + 1;
+    Until deviceFound or
+          (loopCount > 1) or
+          (deviceNumber = startDevice);
+
+    If loopCount > 1 then
+        deviceNumber := 0;
+
+    EZNextDevice := deviceNumber;
+end;
+
+Function EZPollDevices;
+var
+    deviceNumber    :   Integer;
+    deviceFound     :   Boolean;
+begin
+    deviceNumber := EZNextDevice(inDeviceNumber, inDeviceID);
+
+    If inDeviceNumber = 0 then
+        inDeviceNumber := deviceNumber;
+
+    Repeat
+        deviceFound := EZIsOnline(deviceNumber);
+
+        If not deviceFound then
+            deviceNumber := EZNextDevice(deviceNumber, inDeviceID);
+    Until deviceFound or
+          (deviceNumber = inDeviceNumber);
+
+    EZPollDevices := deviceFound;
+end;
+
+Procedure refreshMessage;
+var
+    theRect         :   rect;
+begin
+    with theRect do
+    begin
+        h1 := 10;
+        h2 := 540;
+        v1 := 2;
+        v2 := 28;
+    end;
+
+    LETextBox2(@theMessage, length(theMessage), theRect, leJustFill);
+
+    DrawControls(messagePort);
+end;
+
+Procedure showMessagePort;
+var
+    windowRecord    :   paramList;
+    theRect         :   rect;
+begin
+    with theRect do
+    begin
+        h1 := 50;
+        h2 := 590;
+        v1 := 25;
+        v2 := 57;
+    end;
+
+    with windowRecord do
+    begin
+        paramLength := 78;
+        wFrameBits := $2042;   { % 0010 0000 0110 0010 }
+        wTitle := Nil;
+        wRefCon := 0;
+        wZoom.h1 := 0;
+        wZoom.h2 := 0;
+        wZoom.v1 := 0;
+        wZoom.v2 := 0;
+        wColor := nil;
+        wYOrigin := 0;
+        wXOrigin := 0;
+        wDataH := theRect.v2 - theRect.v1;
+        wDataW := theRect.h2 - theRect.h1;
+        wMaxH := theRect.v2 - theRect.v1;
+        wMaxW := theRect.h2 - theRect.h1;
+        wScrollVer := 0;
+        wScrollHor := 0;
+        wPageVer := 0;
+        wPageHor := 0;
+        wInfoRefCon := 0;
+        wInfoHeight := 0;
+        wFrameDefProc := nil;
+        wInfoDefProc := nil;
+        wContDefProc := pointer(@refreshMessage);
+        wPosition := theRect;
+        wPlane := pointer(topMost);
+        wStorage := nil;
+    end;
+
+    messagePort := NewWindow(windowRecord);
+
+    SetPort(messagePort);
+end;
+
+Function EZWaitForDisk;
+{ Returns true if disk inserted and ready, false if not. }
+const
+    cancelItem              =   10;
+    okItem                  =   11;
+    NullItem                =   3;
+
+var
+    DiskText            :   pString;
+    NewVolName          :   GSOSInString;
+    DiskReady           :   Boolean;
+    theError            :   integer;
+    ErrorString         :   pString;
+    ignoreOnlineStatus  :   Boolean;
+
+    itemHit             :   longint;
+    tmpRect             :   rect;
+    onlineDisk          :   Boolean;
+    ctlList             :   array [1..NullItem] of ptr;
+    NewControl2Junk     :   ctlRecHndl;
+    NumOfClicks         :   Integer;
+
+    deviceName          :   GSOSOutString;
+    firstDevice         :   Integer;
+
+    userAbort           :   Boolean;
+ 
+    procedure setDefaultMessage;
+    begin
+        theMessage := concat('Please insert the disk named "',
+                             DiskText,'".');
+    end;
+
+    Function PrepareNewDisk : Boolean;
+    var
+        FormatParms     :   formatOSDCB;
+    begin
+        With FormatParms do
+        begin
+            pcount := 4;
+            devName := @deviceName.theString;
+            volName := @NewVolName;
+            reqFileSysID := fsProDOS;
+        end;
+ 
+        EraseDiskGS(FormatParms);
+
+        If ToolError = $2b
+        then
+            begin
+                theMessage := concat('The disk is write protected. ',
+                                     'Please insert a non-write protected disk.');
+                EZEjectDisk(outDeviceNumber);
+                PrepareNewDisk := False;
+            end
+        else
+            begin
+                setDefaultMessage;
+
+                If ToolError = 0
+                then
+                    PrepareNewDisk := True
+                else
+                    PrepareNewDisk := False;
+            end;
+    end;
+
+    Function checkDisk : Boolean;
+    var
+        dInfoParms  :   dInfoOSDCB;
+        volumeParms :   volumeOSDCB;
+        volumeName  :   GSOSOutString;
+        VolumeText  :   pString;
+        FormatParms :   formatOSDCB;
+        overMessage :   textBlock;
+    begin
+        deviceName.maxSize := GSOSNameLength + 4;
+
+        with dInfoParms do
+        begin
+            pcount :=  2;
+            devNum := outDeviceNumber;
+            devName := @deviceName;
+        end;
+
+        DInfoGS(dInfoParms);
+
+        volumeName.maxSize := GSOSNameLength + 4;
+
+        with volumeParms do
+        begin
+            pcount := 2;
+            devName := @deviceName.theString;
+            volName := @volumeName;
+        end;
+
+        VolumeGS(volumeParms);
+
+        If ToolError = $27      { I/O Error }
+        then
+            begin           { I/O error. Format the disk.             }
+                If formatIfBad
+                then
+                    begin
+                        With FormatParms do
+                        begin
+                            pcount := 3;
+                            devName := @deviceName.theString;
+                            volName := @NewVolName;
+                        end;
+ 
+                        FormatGS(FormatParms);
+ 
+                        If ToolError <> 0
+                        then
+                            begin
+                                EZEjectDisk(outDeviceNumber);
+                                CheckDisk := False;
+                                theMessage := 'Format operation failed, please insert another disk.';
+                            end
+                        else
+                            CheckDisk := PrepareNewDisk;
+                    end
+                else
+                    CheckDisk := False;
+            end
+        else
+            begin
+                If ToolError = $00
+                then
+                    begin
+                        VolumeText := copy(volumeName.theString.theString, 1,
+                                           volumeName.theString.size);
+ 
+                        If DiskText = VolumeText
+                        then
+                            begin
+                                If eraseExisting then
+                                    CheckDisk := PrepareNewDisk
+                                else
+                                    CheckDisk := True;
+                            end
+                        else
+                            begin
+                                If formatIfBad
+                                then
+                                    begin
+                                        overMessage := concat('54', chr(1),
+                                                              'Overwrite the disk called "',
+                                                              VolumeText, '" ?',chr(1),'#2',
+                                                              chr(1),'^#3');
+ 
+                                        If AlertWindow($0001,Nil,@overMessage) = 0
+                                        then
+                                            CheckDisk := PrepareNewDisk
+                                        else
+                                            begin
+                                                CheckDisk := False;
+                                                EZEjectDisk(outDeviceNumber);
+                                                setDefaultMessage;
+                                            end;
+                                    end
+                                else
+                                    CheckDisk := False;
+                            end;
+                    end
+                else
+                    begin
+                        setDefaultMessage;
+
+                        If ToolError = $2f { Device not online (no disk in drive) }
+                        then
+                            CheckDisk := False
+                        else
+                            begin
+                                theError := ToolError;
+                                CheckDisk := False;
+                                EZEjectDisk(outDeviceNumber);
+                            end;
+                    end;
+            end;
+    end;
+
+    Function ScanDevices : Boolean;
+    var
+        volumeFound     :   Boolean;
+        diskFound       :   Boolean;
+        oneOnly         :   Boolean;
+        doneLoop        :   Boolean;
+        deviceNumber    :   Integer;
+        startDevice     :   Integer;
+    begin
+        volumeFound := False;
+        diskFound := False;
+
+        deviceNumber := EZNextDevice(firstDevice, inDeviceID);
+
+        If firstDevice > 0 then
+            startDevice := firstDevice
+        else
+            startDevice := deviceNumber;
+
+        doneLoop := False;
+
+        Repeat
+            volumeFound := EZCheckDevice(deviceNumber, newVolName);
+
+            If not volumeFound then
+            begin
+                deviceNumber := EZNextDevice(deviceNumber, inDeviceID);
+
+                If deviceNumber = startDevice then
+                    doneLoop := True
+            end;
+        Until doneLoop or
+              volumeFound;
+
+        If doneLoop then
+            volumeFound := EZCheckDevice(deviceNumber, newVolName);
+
+        If volumeFound
+        then
+            outDeviceNumber:= deviceNumber
+        else
+            begin
+                deviceNumber := EZNextDevice(firstDevice, inDeviceID);
+
+                Repeat
+                    If ignoreOnlineStatus
+                    then
+                        diskFound := True
+                    else
+                        diskFound := EZIsOnline(deviceNumber);
+
+                    If not diskFound then
+                        deviceNumber := EZNextDevice(deviceNumber, inDeviceID);
+                Until (deviceNumber = startDevice) or
+                      diskFound;
+
+                If not diskFound then
+                    If ignoreOnlineStatus
+                    then
+                        diskFound := True
+                    else
+                        diskFound := EZIsOnline(deviceNumber);
+
+                If diskFound then
+                    outDeviceNumber := deviceNumber;
+            end;
+
+        If volumeFound or diskFound
+        then
+            ScanDevices := checkDisk
+        else
+            ScanDevices := False;
+    end;
+
+begin
+    DiskText := copy(inVolumeName.theString,1,inVolumeName.size);
+
+    newVolName := inVolumeName;
+ 
+    setDefaultMessage;
+    showMessagePort;
+
+    with TmpRect do
+    begin
+        h1 := 450;
+        v1 := 14;
+        h2 := 0;
+        v2 := 0;
+    end;
+ 
+    ctlList[1] := newButtonTemplate(cancelItem,
+                                    TmpRect,
+                                    0,
+                                    0,
+                                    0,
+                                    @'Cancel',
+                                    Nil,
+                                    Nil);
+ 
+    with TmpRect do
+    begin
+        h1 := 350;
+        v1 := 14;
+        h2 := 0;
+        v2 := 0;
+    end;
+ 
+    ctlList[2] := newButtonTemplate(okItem,
+                                    TmpRect,
+                                    1,
+                                    0,
+                                    0,
+                                    @' Ok ',
+                                    Nil,
+                                    Nil);
+ 
+    ctlList[NullItem] := Nil;
+ 
+    NewControl2Junk := NewControl2(messagePort, 3, @ctlList[1]);
+
+    firstDevice := EZNextDevice(0, inDeviceID);
+
+    If firstDevice <> 0 then  { non zero indicates that at least one exists }
+    begin
+        ignoreOnlineStatus := False;
+        userAbort := False;
+        firstDevice := 0;
+
+        If EZPollDevices(firstDevice, inDeviceID) then
+            DiskReady := ScanDevices
+        else
+            DiskReady := False;
+
+        while (not DiskReady) and
+              (not UserAbort) do
+        begin
+            onlineDisk := EZPollDevices(firstDevice, inDeviceID);
+            ignoreOnlineStatus := False;
+            itemHit := 0;
+
+            If not onlineDisk then
+            begin
+                ShowWindow(messagePort);
+                SelectWindow(messagePort);
+                Activate(cancelItem);
+                Activate(okItem);
+
+                while (not onlineDisk) and
+                      (itemHit = 0) do
+                begin
+                    onlineDisk := EZPollDevices(firstDevice, inDeviceID);;
+
+                    itemHit := EZDialogEvent(NumOfClicks);
+
+                    case ord(itemHit) of
+                        okItem      :   begin
+                                            onlineDisk := True;
+                                            ignoreOnlineStatus := True;
+                                        end;
+                        cancelItem  :   userAbort := True;
+                        otherwise   ;
+                    end;
+                end;
+
+                HideWindow(messagePort);
+            end;
+
+            If (itemHit = okItem) or onlineDisk then
+                DiskReady := ScanDevices;
+        end;
+    end;
+
+    CloseWindow(messagePort);
+
+    EZForceRefresh;
+
+    EZWaitForDisk := DiskReady;
+end;
+
+Procedure EZRefreshVDPort;
+var
+    tmpRect     :   rect;
+    penSize     :   point;
+    barLength   :   Integer;
+begin
+    setPort(VDPort);
+
+    moveTo(10,10);
+    DrawString(@'Verifying disk ...');
+
+    setRect(tmpRect,8,12,212,23);
+    
+    SetSolidPenPat(0);
+    GetPenSize(penSize);
+    SetPenSize(3,1);
+    FrameRect(TmpRect);
+    SetPenSize(penSize.h,penSize.v);
+
+    barLength := trunc(VDPercent * 198.0);
+
+    with tmpRect do
+    begin
+        h1 := 11;
+        h2 := h1 + barLength;
+        v1 := 13;
+        v2 := 22;
+    end;
+
+    SetPenPat(EZRedPattern^);
+    PaintRect(tmpRect);
+end;
+
+Function EZVerifyDisk;
+var
+    devInfoParms    :   dInfoOSDCB;
+    volumeParms     :   volumeOSDCB;
+    deviceName      :   GSOSOutString;
+    volumeName      :   GSOSOutString;
+    bufferSize      :   longint;
+    blockCount      :   longint;
+    readCount       :   longint;
+    tmpRect         :   rect;
+    noError         :   boolean;
+    currentBlock    :   longint;
+    bufferHandle    :   handle;
+    readParms       :   devReadWriteOSDCB;
+    savePort        :   grafPortPtr;
+    minBufferSize   :   longint;
+    maxBufferSize   :   longint;
+    chunkSize       :   longint;
+    maxRead         :   longint;
+begin
+    savePort := getPort;
+
+    deviceName.maxSize := GSOSNameLength + 4;
+
+    with devInfoParms do
+    begin
+        pcount := 2;
+        devNum := deviceNumber;
+        devName := @deviceName;
+    end;
+
+    DInfoGS(devInfoParms);
+
+    volumeName.maxSize := GSOSNameLength + 4;
+
+    with volumeParms do
+    begin
+        pcount := 6;
+        devName := @deviceName.theString;
+        volName := @volumeName;
+    end;
+
+    VolumeGS(volumeParms);
+
+    EZRedPatternHandle := patternHandle(LoadResource(rListPattern, 2));
+    EZRedPattern := EZRedPatternHandle^;
+
+    chunkSize := ord4(volumeParms.blockSize);
+    maxBufferSize := ord4(chunkSize * ord4(64));
+    bufferSize := ord4(chunkSize * ord4(1));
+
+    { buffersize goes in as the minimum size for the buffer, and returns as }
+    { the actual size of the buffer                                         }
+
+    bufferHandle := EZBuffer(bufferSize, maxBufferSize, chunkSize);
+
+    If bufferHandle <> Nil then
+    begin
+        maxRead := bufferSize div chunkSize;
+
+        blockCount := volumeParms.totalBlocks;
+        currentBlock := 0;
+        noError := True;
+
+        setRect(tmpRect,210,87,430,113);
+
+        VDPercent := 0.0;
+
+        VDPort := startupEZDialog(tmpRect, @EZRefreshVDPort);
+        setPort(VDPort);
+
+        EZForceRefresh;
+
+        while (blockCount > 0) and noError do
+        begin
+            If blockCount >= maxRead
+            then
+                readCount := maxRead
+            else
+                readCount := blockCount;
+
+            with readParms do
+            begin
+                pcount := 6;
+                devNum := deviceNumber;
+                buffer := bufferHandle^;
+                requestCount := (readCount * volumeParms.blockSize);
+                startingBlock := currentBlock;
+                blockSize := volumeParms.blockSize;
+            end;
+
+            DReadGS(readParms);
+
+            If ToolError <> 0
+            then
+                noError := False
+            else
+                begin
+                    currentBlock := currentBlock + readCount;
+                    blockCount := blockCount - readCount;
+                end;
+
+            VDPercent := currentBlock / volumeParms.totalBlocks;
+
+            EZRefreshVDPort;
+        end;
+
+        CloseWindow(VDPort);
+
+        DisposeHandle(bufferHandle);
+    end;
+
+    setPort(savePort);
+
+    EZVerifyDisk := noError;
+end;
+
+end.

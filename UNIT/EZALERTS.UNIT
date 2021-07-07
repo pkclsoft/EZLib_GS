@@ -1,0 +1,95 @@
+{----------------------------------------------------------------------------}
+{                             EZALERTS.UNIT                                  }
+{                                                                            }
+{ This unit contains alert style routines.                                   }
+{                                                                            }
+{ Copyright 1989...End Of Time                                               }
+{ EZ-Soft                                                                    }
+{                                                                            }
+{ Written by: P.C. Easdown                                                   }
+{----------------------------------------------------------------------------}
+
+{$ keep 'EZAlerts' }
+Unit EZAlerts;
+
+interface
+
+Uses Common, WindowMgr, QuickDrawII, DialogMgr, IntegerMath, lineEdit,
+     ControlMgr, ToolLocator, MenuMgr, ResourceMgr;
+
+{$ libprefix 'int/' }
+USES EZConst, EZMisc, EZWindows;
+
+{----------------------------------------------------------------------------}
+{ EZMessageBox  This function creates a small dialog box on the screen that  }
+{ ~~~~~~~~~~~~  is created just large enough to contain a string of          }
+{ characters supplied in the Msg parameter.  This dialog is centered on the  }
+{ screen. The function returns the grafport pointer to the application, so   }
+{ that it may dispose of the dialog when it is ready. This is a useful way   }
+{ of displaying those 'Please wait...' type messages.                        }
+{----------------------------------------------------------------------------}
+
+Function EZMessageBox(Msg : pString) : grafPortPtr; extern;
+
+{----------------------------------------------------------------------------}
+{ ProdosError  Produces an alert window that displays a message describing   }
+{ ~~~~~~~~~~~  an error, along with the hexadecimal representation of the    }
+{ GS/OS error code.  This function ALWAYS returns TRUE.                      }
+{----------------------------------------------------------------------------}
+
+Function ProdosError(    ErrorCode : Integer;
+                     var Msg       : textBlock;
+                         NoOption  : Boolean) : boolean;
+
+implementation
+
+Function  ProdosError;
+var
+    OurMsg      :   packed array [1..300] of char;
+    ErrText     :   pString;
+    Junk        :   Integer;
+    descrHandle :   handle;
+    textPtr     :   pStringPtr;
+begin
+    descrHandle := LoadResource(rPString, ord4(ErrorCode + ord4(512)));
+
+    If ToolError = 0
+    then
+        begin
+            textPtr := pStringPtr(descrHandle^);
+            ErrText := concat('Error: ', textPtr^);
+        end
+    else
+        begin
+            Hex(ErrorCode, 4, ErrText);
+            ErrText := concat('Error code: $', ErrText);
+        end;
+ 
+    OurMsg := concat(Msg, chr(Return), chr(Return), ErrText);
+
+    If not NoOption then
+        OurMsg := concat(OurMsg, chr(Return), chr(Return), 'Please select your ',
+                         'course of action.');
+ 
+    OurMsg := concat('0        4', chr(1), OurMsg, chr(1), 'Abort Operation'); 
+
+    If not NoOption then
+        OurMsg := concat(OurMsg, chr(1), '^#6');
+ 
+    OurMsg[2] := chr($37);
+    OurMsg[3] := chr($00);
+    OurMsg[4] := chr($46);
+    OurMsg[5] := chr($00);
+    OurMsg[6] := chr($91);
+    OurMsg[7] := chr($00);
+    OurMsg[8] := chr($3a);
+    OurMsg[9] := chr($02);
+
+    If (AlertWindow($0001,Nil,@OurMsg) = 0) or NoOption
+    then
+        ProdosError := True
+    else
+        ProdosError := False;
+end;
+
+end.
