@@ -2,6 +2,9 @@ delete int/=.int
 delete obj/=.a
 delete obj/=.root
 delete obj/ezlib
+delete testctl
+delete ctest
+delete testtrans
 filetype makefile src
 filetype unit/=.unit src 5
 filetype pas/=.pas src 5

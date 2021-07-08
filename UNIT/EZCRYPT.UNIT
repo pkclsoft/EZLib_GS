@@ -4,6 +4,10 @@
 { This unit contains a number of routine used for encrypting a range of      }
 { memory, and decrypting the same.                                           }
 {                                                                            }
+{                                                                            }
+{                                                                            }
+{                                                                            }
+{                                                                            }
 { Copyright 1989...End Of Time                                               }
 { EZ-Soft                                                                    }
 {                                                                            }
@@ -17,11 +21,14 @@ interface
 
 Uses Common, IntegerMath;
 
+{ A 3 character product code }
+type aProductCode = packed array [0..3] of char;
+
 Procedure EZCrypt(    theBuffer       :   ptr;
                       bufferLength    :   longint;
                   var theKey          :   pString);
 
-Procedure EZCreateSerialNumber(    productCode      :   pString;
+Procedure EZCreateSerialNumber(    productCode      :   aProductCode;
                                    keyWord          :   pString;
                                    serialNumber     :   Longint;
                                var theSerialNumber  :   pString);

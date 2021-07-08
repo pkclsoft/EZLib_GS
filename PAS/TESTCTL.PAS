@@ -2,8 +2,11 @@
 Program TestCtl(erroroutput);
 
 Uses Common, QuickDrawII, ControlMgr, WindowMgr, ListMgr, LineEdit,
-     MenuMgr, ToolLocator, TextEdit, EZConst, EZMisc, EZControls, EZTools,
-     DeskMgr, EZWindows, EZDisk;
+     MenuMgr, ToolLocator, DeskMgr, TextEdit;
+     
+{$ libprefix 'int/' }
+USES EZConst, EZMisc, EZControls, EZTools,
+     EZWindows, EZDisk;
 
 Const
    aOkItem                  = 1;
@@ -262,7 +265,7 @@ begin
                                          1,
                                          Nil,
                                          10,
-                                         9,
+                                         5,
                                          @TestList,
                                          Nil);
 
@@ -449,7 +452,7 @@ begin
                                            1,
                                            Nil,
                                            10,
-                                           9,
+                                           5,
                                            @TestList1,
                                            Nil);
 
@@ -485,7 +488,7 @@ begin
                                            1,
                                            Nil,
                                            10,
-                                           9,
+                                           5,
                                            @TestList2,
                                            Nil);
 
@@ -521,7 +524,7 @@ begin
                                            1,
                                            Nil,
                                            10,
-                                           9,
+                                           5,
                                            @TestList3,
                                            Nil);
 
@@ -557,7 +560,7 @@ begin
                                            1,
                                            Nil,
                                            10,
-                                           9,
+                                           5,
                                            @TestList4,
                                            Nil);
 

@@ -1,7 +1,10 @@
 {$ keep 'ctest' }
 program ctest (input, output, erroroutput);
 
-uses common, controlmgr, menumgr, toollocator, gsos, ezconst, ezmisc, ezcrypt;
+uses common, controlmgr, menumgr, toollocator, gsos;
+
+{$ libprefix 'int/' }
+USES EZConst, EZMisc, ezcrypt;
 
 var
     instr       :   pstring;

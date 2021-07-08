@@ -1,7 +1,10 @@
 {$ keep 'testtrans' }
 program testtrans(input,output);
 
-uses common, controlmgr, toollocator, menumgr, ezmisc, ezconst, ezstring;
+uses common, controlmgr, toollocator, menumgr;
+
+{$ libprefix 'int/' }
+USES EZConst, EZMisc, EZString;
 
 var
     Translation         :   pString;
@@ -56,17 +59,17 @@ var
                                 end;
         end;
 
-        while (inCount <= inName.SLength) and
+        while (inCount <= inName.size) and
               (outCount <= maxLength)     do
         begin
             If fileSystem = fsHighSierra then
-                inName.SText[inCount] := Upper(inName.SText[inCount]);
+                inName.theString[inCount] := Upper(inName.theString[inCount]);
 
-            If charNotValid(inName.SText[inCount])
+            If charNotValid(inName.theString[inCount])
             then
                 Translation[outCount] := wordSeparator
             else
-                Translation[outCount] := inName.SText[inCount];
+                Translation[outCount] := inName.theString[inCount];
 
             If (Translation[outCount] <> lastChar)
             then
@@ -96,8 +99,8 @@ begin
     write('enter the file system : ');
     readln(fileSystem);
 
-    inName.stext := copy(theName,1,length(theName));
-    inName.slength := length(theName);
+    inName.theString := copy(theName,1,length(theName));
+    inName.size := length(theName);
 
     TranslateName;
 
