@@ -20,11 +20,25 @@ uses Common, MscToolSet, IntegerMath;
 {$ libprefix 'int/' }
 USES EZConst, EZMisc;
 
+CONST
+    {
+      These are the byte numbers within a Common.timefield (which are part of the 
+      getFileInfoOSDCB record).
+    }
+    tfSeconds = 1;
+    tfMinutes = 2;
+    tfHour    = 3;
+    tfYear    = 4;
+    tfDay     = 5;
+    tfMonth   = 6;
+    tfUnused  = 7;
+    tfWeekday = 8;
+
 TYPE
     DateRecord      = Record
                         Day             : Integer;
                         Month           : Integer;
-                        Year            : Integer;
+                        Year            : Integer; { a four digit year }
                         Date            : pString;
                       end;
  
@@ -33,83 +47,101 @@ TYPE
                         Hours           : Integer;
                         Time            : pString;
                       end;
-
+    
 {----------------------------------------------------------------------------}
-{ ConvInt2Date  Takes a date stamp of prodos 8 vintage, and breaks it up     }
+{ ConvP8ToDate  Takes a date stamp of prodos 8 vintage, and breaks it up     }
 { ~~~~~~~~~~~~  into its components, in a DateRecord structure.              }
 {----------------------------------------------------------------------------}
 
-Procedure ConvInt2Date(    IntDate : LongInt;
+Procedure ConvP8ToDate(    IntDate : LongInt;
                        var OutDate : DateRecord);
 
 {----------------------------------------------------------------------------}
-{ Date2Int  The opposite of ConvInt2Date, this routine takes the date as     }
+{ DateToP8  The opposite of ConvP8ToDate, this routine takes the date as     }
 { ~~~~~~~~  specified by inDate, and converts it to a prodos 8 vintage date  }
 { record.                                                                    }
 {----------------------------------------------------------------------------}
 
-Function Date2Int(InDate : DateRecord) : LongInt;
+Function DateToP8(InDate : DateRecord) : LongInt;
 
 {----------------------------------------------------------------------------}
-{ ConvInt2Time  Takes a time stamp of prodos 8 vintage, and breaks it up     }
+{ ConvP8ToTime  Takes a time stamp of prodos 8 vintage, and breaks it up     }
 { ~~~~~~~~~~~~  into its components, in a TimeRecord structure.              }
 {----------------------------------------------------------------------------}
 
-Procedure ConvInt2Time(    IntTime : LongInt;
+Procedure ConvP8ToTime(    IntTime : LongInt;
                        var OutTime : TimeRecord);
 
 {----------------------------------------------------------------------------}
-{ Time2Int  The opposite of ConvInt2Time, this routine takes the time as     }
+{ TimeToP8  The opposite of ConvP8ToTime, this routine takes the time as     }
 { ~~~~~~~~  specified by inTime, and converts it to a prodos 8 vintage time  }
 { record.                                                                    }
 {----------------------------------------------------------------------------}
 
-Function Time2Int(InTime : TimeRecord) : LongInt;
+Function TimeToP8(InTime : TimeRecord) : LongInt;
 
 {----------------------------------------------------------------------------}
-{ ConvFileDate2Int  This takes the date and time stamps that would come from }
+{ ConvFileDateToP8  This takes the date and time stamps that would come from }
 { ~~~~~~~~~~~~~~~~  either the system, or a getfileinfo call, and converts   }
-{ them from their confused state into nice prodos 8 format, thus making      }
-{ comparison between dates and times very easy.                              }
+{ them into prodos 8 format, thus making comparison between dates and times  }
+{ very easy (though only down to the minute).                                }
 {----------------------------------------------------------------------------}
 
-Procedure ConvFileDate2Int(    DateWord    : longInt;
-                               TimeWord    : longInt;
+Procedure ConvFileDateToP8(    DateTime    : timeField;
                            var Date        : longInt;
                            var Time        : longInt);
 
 {----------------------------------------------------------------------------}
-{ ConvFileDate2Date This takes the date and time stamps that would come from }
-{ ~~~~~~~~~~~~~~~~~ either the system, or a getfileinfo call, and converts   }
-{ them from their confused state into the structured format for further      }
-{ manipulation by the application.                                           }
+{ ConvFileDateToSeconds This takes the date and time stamps that would come  }
+{ ~~~~~~~~~~~~~~~~~~~~~ from either the system, or a getfileinfo call, and   }
+{ converts them into the number of seconds since Jan 1, 1970.                }
 {----------------------------------------------------------------------------}
 
-Procedure ConvFileDate2Date(    DateWord   : longInt;
-                                TimeWord   : longInt;
-                            var Date       : DateRecord;
-                            var Time       : TimeRecord);
+Procedure ConvFileDateToSeconds(    DateTime : timeField;
+                                var seconds  : longint);
+
+{----------------------------------------------------------------------------}
+{ ConvFileDateToDate This takes the date and time stamps that would come     }
+{ ~~~~~~~~~~~~~~~~~~ from either the system, or a getfileinfo call, and      }
+{ converts them into the structured format.                                  }
+{----------------------------------------------------------------------------}
+
+Procedure ConvFileDateToDate(    DateTime   : timeField;
+                             var Date       : DateRecord;
+                             var Time       : TimeRecord);
 
 {----------------------------------------------------------------------------}
 { GetSysDate  This procedure gets the current RTC time and date stamp from   }
-{ ~~~~~~~~~~  the system, and converts them to prodos 8 format.              }
-{                                                                            }
-{ It should be noted that this routine does allow for the different date     }
-{ formats available on the GS.                                               }
+{ ~~~~~~~~~~  the system, and converts them to seconds since Jan 1 1970.     }
 {----------------------------------------------------------------------------}
 
-Procedure GetSysDate(var MyTime : LongInt;
-                     var MyDate : LongInt);
+function GetSysDate : LongInt;
+
+Procedure InitEZDates;
+
+function ULongAdd(val1, val2: longint) : longint; extern;
+function ULongSub(val1, val2: longint) : longint; extern;
 
 implementation
 
-Procedure ConvInt2Date;
+
+VAR
+    { this is essentially the date/time on the 1st of Jan, 1970 using Apples
+      time format, as returned by ConvSeconds.  Because we can't, in ORCA/Pascal,
+      declare a true unsigned longint, we can't really store numbers beyond this
+      date safely, so every time we get a value in seconds from ConvSeconds, we
+      subtrack the value in this variable, thus returning a number of seconds
+      since the start of 1970, which fits nicely within a signed longint.
+    }
+    secondsReferenceOffset : longint;
+
+Procedure ConvP8ToDate;
 Type
     TwoChar = String[2];
 var
     DayChar     : TwoChar;
     MonthChar   : TwoChar;
-    YearChar    : TwoChar;
+    YearChar    : String[4];
 begin
    with OutDate do
     begin
@@ -117,8 +149,16 @@ begin
         Day := ord(ord4(IntDate) & ord4($001f));
         Month := ord((ord4(IntDate) & ord4($01e0)) >> 5);
         Year := ord((ord4(IntDate) & ord4($fe00)) >> 9);
+        
+        if Year < 40 then
+        begin
+            Year := Year + 2000;
+        end else
+        begin
+            Year := Year + 1900;
+        end;
  
-        { Produce the visual representation in a DD/MM/19YY format.           }
+        { Produce the visual representation in a DD/MM/YYYY format.           }
         DayChar := cnvis(Day);
         if length(DayChar) = 1 then
             DayChar := concat('0',DayChar);
@@ -126,23 +166,33 @@ begin
         if length(MonthChar) = 1 then
            MonthChar := concat('0',MonthChar);
         YearChar := cnvis(Year);
-        if length(YearChar) = 1 then
-            YearChar := concat('0',YearChar);
         Date := concat(DayChar,   '/',
-                       MonthChar, '/19',
+                       MonthChar, '/',
                        YearChar);
     end;
 end;
 
-Function Date2Int;
+Function DateToP8;
+var
+    yearWithinCentury : Integer;
 begin
+    yearWithinCentury := InDate.Year;
+    
+    if yearWithinCentury >= 2000 then
+    begin
+        yearWithinCentury := yearWithinCentury - 2000;
+    end else if yearWithinCentury > 1900 then
+    begin
+        yearWithinCentury := yearWithinCentury - 1900;
+    end;
+    
     With InDate do
-        Date2Int := (ord4(Year  << 9) |
+        DateToP8 := (ord4(Year  << 9) |
                      ord4(Month << 5) |
                      ord4(Day)) & ord4($0000ffff);
 end;
 
-Procedure ConvInt2Time;
+Procedure ConvP8ToTime;
 Type
     TwoChar = String[2];
 var
@@ -166,51 +216,54 @@ begin
     end;
 end;
 
-Function Time2Int;
+Function TimeToP8;
 begin
     With InTime do
-        Time2Int := (ord4(Hours << 8) | ord4(Minutes)) & ord4($0000ffff);
+        TimeToP8 := (ord4(Hours << 8) | ord4(Minutes)) & ord4($0000ffff);
 end;
 
-Procedure ConvFileDate2Int;
+Procedure ConvFileDateToP8;
 var
     DateRec : DateRecord;
     TimeRec : TimeRecord;
 
 begin
-    { As may be noticed, Apple realy got confused when they defined their     }
-    { date and time words.  What, with the month and day coming from the time }
-    { word, and the entire time coming from the date word!!                   }
- 
      With DateRec do
      begin
-         Year := ConvL2I(DateWord).msw >> 8;
-         Month := (ConvL2I(TimeWord).lsw >> 8) + 1;
-         Day := (ConvL2I(TimeWord).lsw & $00ff) + 1;
+         Year := DateTime[tfYear];
+         Month := DateTime[tfMonth];
+         Day := DateTime[tfDay];
      end;
-     Date := Date2Int(DateRec);
+     Date := DateToP8(DateRec);
  
      With TimeRec do
      begin
-         Hours := ConvL2I(DateWord).msw & $00ff;
-         Minutes := ConvL2I(DateWord).lsw >> 8;
+         Hours := DateTime[tfHour];
+         Minutes := DateTime[tfMinutes];
      end;
-     Time := Time2Int(TimeRec);
+     Time := TimeToP8(TimeRec);
 end;
 
-Procedure ConvFileDate2Date;
+Procedure ConvFileDateToDate;
 var
     DateInt : longInt;
     TimeInt : longInt;
 begin
-    ConvFileDate2Int(DateWord,TimeWord,DateInt,TimeInt);
-    ConvInt2Date(DateInt,Date);
-    ConvInt2Time(TimeInt,Time);
+    ConvFileDateToP8(DateTime,DateInt,TimeInt);
+    ConvP8ToDate(DateInt,Date);
+    ConvP8ToTime(TimeInt,Time);
 end;
 
-Procedure GetSysDate;
+Procedure ConvFileDateToSeconds;
+begin
+    seconds := ConvSeconds(1, 0, @DateTime);
+    seconds := UlongSub(seconds, secondsReferenceOffset);
+end;
+
+function GetSysDate;
 const
     dateFormat  = $0034;
+    
 var
     DateLayout  : Integer;
     BatText     : pString;
@@ -218,50 +271,34 @@ var
     SysDate     : DateRecord;
     Tmp, Tmp1   : pString;
     Tmp2, Tmp3  : pString;
+    
+    secondsResult : longint;
 begin
-    DateLayout := ReadBParam(dateFormat);   { Get the date layout             }
- 
-    ReadAsciiTime(@BatText[1]);             { Get the date and time stamp.    }
-    BatText[0] := chr(20);
- 
-    With SysTime do                         { Extract the time.  This is easy }
-    begin                                   { as the time always takes the    }
-        Tmp := copy(BatText, 10, 2);        { same format.                    }
-        Hours := Dec2Int(@Tmp[1],2,0);
-        Tmp := copy(BatText, 13, 2);
-        Minutes := Dec2Int(@Tmp[1],2,0);
-        Tmp := copy(BatText, 19, 1);
-        If Tmp = 'P' then                   { Force the time into 24 hour as  }
-            Hours := Hours + 12;            { it's easier to handle.          }
-    end;
- 
-    With SysDate do
-    begin
-        Tmp1 := copy(BatText, 1, 2);        { Get the three date components.  }
-        Tmp2 := copy(BatText, 4, 2);
-        Tmp3 := copy(BatText, 7, 2);
- 
-        Case DateLayout of
-            0   :   begin                               { MM/DD/YY format     }
-                        Day := Dec2Int(@Tmp2[1],2,0);
-                        Month := Dec2Int(@Tmp1[1],2,0);
-                        Year := Dec2Int(@Tmp3[1],2,0);
-                    end;
-            1   :   begin                               { DD/MM/YY format     }
-                        Day := Dec2Int(@Tmp1[1],2,0);
-                        Month := Dec2Int(@Tmp2[1],2,0);
-                        Year := Dec2Int(@Tmp3[1],2,0);
-                    end;
-            2   :   begin                               { YY/MM/DD format     }
-                        Day := Dec2Int(@Tmp3[1],2,0);
-                        Month := Dec2Int(@Tmp2[1],2,0);
-                        Year := Dec2Int(@Tmp1[1],2,0);
-                    end;
-        end;
-    end;
- 
-    MyTime := Time2Int(SysTime);        { Convert to prodos 8 format.         }
-    MyDate := Date2Int(SysDate);
+
+    secondsResult := ConvSeconds(6, 0, nil);
+    secondsResult := UlongSub(secondsResult, secondsReferenceOffset);
+    
+    GetSysDate := secondsResult;
 end;
+
+Procedure InitEZDates;
+var
+    myDate : DateRecord;
+    P8Date : longint;
+begin
+    secondsReferenceOffset := 0;
+
+    { get the number of seconds representing Jan 1, 1970 and store that so that whenever we get the system clock
+      time, we subtract that number to give us an offset from 1970 which will fit in an ORCA Pascal signed longint,
+      because the support for an unsigned longint is sketchy.
+    }
+    myDate.day := 1;
+    myDate.Month := 1;
+    myDate.Year := 70;
+    
+    P8date := DateToP8(myDate);
+    
+    secondsReferenceOffset := ConvSeconds(5, 0, @P8Date);
+end; {InitEzDates}
 
 end.

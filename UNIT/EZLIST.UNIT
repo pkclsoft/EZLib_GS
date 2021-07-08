@@ -37,7 +37,7 @@ Const
     leftDArrowChar  =   $c7;
 
 {----------------------------------------------------------------------------}
-{ EXDrawMember  This routine is supplied for those programmers wanting to    }
+{ EZDrawMember  This routine is supplied for those programmers wanting to    }
 { ~~~~~~~~~~~~  display file type icons in a list of file names.  To use it  }
 {               simply pass its address into the list manager routines in    }
 {               the drawMember parameter.                                    }

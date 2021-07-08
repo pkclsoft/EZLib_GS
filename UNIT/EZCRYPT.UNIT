@@ -1,12 +1,13 @@
 {----------------------------------------------------------------------------}
 {                              EZCRYPT.UNIT                                  }
 {                                                                            }
-{ This unit contains a number of routine used for encrypting a range of      }
+{ This unit contains a number of routines used for encrypting a range of     }
 { memory, and decrypting the same.                                           }
 {                                                                            }
-{                                                                            }
-{                                                                            }
-{                                                                            }
+{ This unit provides a rudimentary mechanism for encrypting a set of bytes   }
+{ using a specified keyword.  It was originally developed as part of a       }
+{ license key mechanism for EZBackup (hence the EZCreateSerialNumber and     }
+{ EZSerialNumberOk methods.                                                  }
 {                                                                            }
 { Copyright 1989...End Of Time                                               }
 { EZ-Soft                                                                    }

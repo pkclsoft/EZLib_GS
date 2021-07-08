@@ -1,3 +1,5 @@
+; This alternate makefile uses the Apple supplied makelib tool, assuming it has been installed
+; as 17/makelibiigs
 obj/ezlib obj/ezconst.a     obj/ezmisc.a      obj/ezstring.a   
           obj/ezwindows.a   obj/ezcontrols.a  obj/ezlineedit.a
           obj/ezalerts.a    obj/ezdisk.a      obj/ezdates.a

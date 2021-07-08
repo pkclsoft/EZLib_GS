@@ -11,10 +11,49 @@
          keep EZAsm
 
          mload asm/EZAsm.Macros
-         copy 2/ainclude/e16.quickdraw
-         copy 2/ainclude/e16.resources
-         copy asm/e16.ezconst
+         copy 13/ainclude/e16.quickdraw
+         copy 13/ainclude/e16.resources
 
+ULongAdd start
+
+result   equ    0
+
+         subroutine (4:val1,4:val2),4
+         
+         longa  on
+         clc
+         lda    val1
+         adc    val2
+         sta    result
+         lda    val1+2
+         adc    val2+2
+         sta    result+2
+         
+         return 4:result
+         
+         end
+
+ULongSub start
+
+result   equ    0
+
+         subroutine (4:val1,4:val2),4
+         
+         longa  on
+         
+         sec
+         lda    val1
+         sbc    val2
+         sta    result
+         lda    val1+2
+         sbc    val2+2
+         sta    result+2
+         
+         return 4:result
+         
+         end
+         
+         
 Upper    start
 
          subroutine (2:InChar),2
@@ -616,4 +655,4 @@ done                pushWord    foreColor           ; Restore the drawing modes
 
 memberString        ds          256
 
-            end
+         end
