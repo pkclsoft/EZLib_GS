@@ -47,6 +47,11 @@ TYPE
                         Hours           : Integer;
                         Time            : pString;
                       end;
+                      
+    P8DateTime      = Record
+                        Date            : longint;
+                        Time            : longint;
+                      end;
     
 {----------------------------------------------------------------------------}
 { ConvP8ToDate  Takes a date stamp of prodos 8 vintage, and breaks it up     }
@@ -109,6 +114,15 @@ Procedure ConvFileDateToSeconds(    DateTime : timeField;
 Procedure ConvFileDateToDate(    DateTime   : timeField;
                              var Date       : DateRecord;
                              var Time       : TimeRecord);
+
+{----------------------------------------------------------------------------}
+{ ConvSecondsToP8 This takes the date and time as a time in secondss since   }
+{ ~~~~~~~~~~~~~~~ Jan 1 1970, and converts it to Prodos format.              }
+{----------------------------------------------------------------------------}
+
+Procedure ConvSecondsToP8(    seconds   : longint;
+                          var dateInt   : longint;
+                          var timeInt   : longint);
 
 {----------------------------------------------------------------------------}
 { GetSysDate  This procedure gets the current RTC time and date stamp from   }
@@ -242,7 +256,7 @@ begin
          Minutes := DateTime[tfMinutes];
      end;
      Time := TimeToP8(TimeRec);
-end;
+end; { ConvFileDateToP8 }
 
 Procedure ConvFileDateToDate;
 var
@@ -252,13 +266,25 @@ begin
     ConvFileDateToP8(DateTime,DateInt,TimeInt);
     ConvP8ToDate(DateInt,Date);
     ConvP8ToTime(TimeInt,Time);
-end;
+end; { ConvFileDateToDate }
 
 Procedure ConvFileDateToSeconds;
 begin
     seconds := ConvSeconds(1, 0, @DateTime);
     seconds := UlongSub(seconds, secondsReferenceOffset);
-end;
+end; { ConvFileDateToSeconds }
+
+Procedure ConvSecondsToP8;
+var
+    rubbish          : longint;
+    secondsSince1904 : longint;
+    p8Date           : P8DateTime;
+begin
+    secondsSince1904 := UlongAdd(seconds, secondsReferenceOffset);
+    rubbish := ConvSeconds(4, secondsSince1904, @p8Date);
+    dateInt := p8Date.Date;
+    timeInt := p8Date.time;
+end; { ConvSecondsToP8 }
 
 function GetSysDate;
 const

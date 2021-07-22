@@ -42,6 +42,25 @@ type
                             buffer       : byte;
                           end;
 
+   { necessary because the one inside the GSOS.pas provided by Byteworks is wrong }
+   ezSetFileInfoOSDCB = record
+          pcount: integer;
+          pathName: gsosInStringPtr;
+          access: integer;
+          fileType: integer;
+          auxType: longint;
+          nullField1: integer;       {set this field to zero}
+          createDateTime: timefield;
+          modDateTime: timefield;
+          optionList: optionListPtr;
+          nullField2: longint;       {set this field to zero}
+          nullField3: longint;       {set this field to zero}
+          nullField4: longint;       {set this field to zero}
+          nullField5: longint;       {set this field to zero}
+      end;
+
+procedure EZSetFileInfoGS (var parms: ezSetFileInfoOSDCB); prodos ($2005);
+
 {----------------------------------------------------------------------------}
 { ValidatePathName  This function takes a GS/OS pathname as input, and       }
 { is through the ExpandPath call in order to determine it's validity, and to }
@@ -1145,23 +1164,6 @@ begin
 end;
 
 Function EZCopyFile;
-type
-   { necessary because the one inside the GSOS.pas provided by Byteworks is wrong }
-   ezSetFileInfoOSDCB = record
-      pcount: integer;
-      pathName: gsosInStringPtr;
-      access: integer;
-      fileType: integer;
-      auxType: longint;
-      nullField1: integer;       {set this field to zero}
-      createDateTime: timefield;
-      modDateTime: timefield;
-      optionList: optionListPtr;
-      nullField2: longint;       {set this field to zero}
-      nullField3: longint;       {set this field to zero}
-      nullField4: longint;       {set this field to zero}
-      nullField5: longint;       {set this field to zero}
-      end;
 
 var
     getInfoParms        :   getFileInfoOSDCB;
@@ -1179,8 +1181,6 @@ var
     errorCode           :   integer;
     Msg                 :   textBlock;
     fileSize            :   longint;
-
-    procedure EZSetFileInfoGS (var parms: ezSetFileInfoOSDCB); prodos ($2005);
 
     Procedure transferData;
     var

@@ -1,0 +1,8 @@
+unset exit
+exists 13/ezlibdefs
+if {status} == 0
+create 13/EZLibDefs
+end
+
+copy -C obj/ezlib 13/
+copy -C int/=.int 13/EZLibDefs
