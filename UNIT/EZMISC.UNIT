@@ -28,10 +28,14 @@ Type
     { filenames from GSOS.  Remember to preset the ILength field with a value }
     { of 32.                                                                  }
  
+    FilenameInString    = Record
+                            size : Integer;
+                            theString   : packed array [1..FileNameLength] of char;
+                          end;
+    
     FilenameString      = Record
-                            ILength : Integer;
-                            SLength : Integer;
-                            SText   : packed array [1..FileNameLength] of char;
+                            maxSize : Integer;
+                            theString : FilenameInString;
                           end;
  
     ConvL2I         = record       { For splitting a longint into 2 integers  }

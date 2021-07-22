@@ -763,8 +763,9 @@ var
 
     junk        :   Boolean;
 begin
-    inName.SText := '1 Strange f#$!name';
-    inName.SLength := 18;
+    inName.theString.theString := '1 Strange f#$!name';
+    inName.theString.size := 18;
+    inName.maxSize := 255;
     fileSystem := fsProDOS;
 
     junk := EZTranslateName(inName, fileSystem);

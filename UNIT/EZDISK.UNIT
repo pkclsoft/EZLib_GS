@@ -902,17 +902,17 @@ var
                                 end;
         end;
 
-        while (inCount <= inName.SLength) and
+        while (inCount <= inName.theString.size) and
               (outCount <= maxLength)     do
         begin
             If fileSystem = fsHighSierra then
-                inName.SText[inCount] := Upper(inName.SText[inCount]);
+                inName.theString.theString[inCount] := Upper(inName.theString.theString[inCount]);
 
-            If charNotValid(inName.SText[inCount])
+            If charNotValid(inName.theString.theString[inCount])
             then
                 Translation[outCount] := wordSeparator
             else
-                Translation[outCount] := inName.SText[inCount];
+                Translation[outCount] := inName.theString.theString[inCount];
 
             If (Translation[outCount] <> lastChar)
             then
@@ -953,7 +953,7 @@ begin
     SetPort(TNPort);
 
     Message := concat('The file/folder name "',
-                      copy(inName.SText,1,inName.SLength),
+                      copy(inName.theString.theString,1,inName.theString.size),
                       '" is unacceptable to the destination file system.');
 
     cautionIconHandle := LoadResource(rIcon, 1);
@@ -1081,9 +1081,9 @@ begin
     then
         begin
             getLineEditText(lineEditItem, Translation);
-            inName.ILength := FileNameLength + 4;
-            inName.SLength := length(Translation);
-            inName.SText := copy(Translation,1,length(Translation));
+            inName.maxSize := FileNameLength + 4;
+            inName.theString.size := length(Translation);
+            inName.theString.theString := copy(Translation,1,length(Translation));
 
             EZTranslateName := False;
         end
