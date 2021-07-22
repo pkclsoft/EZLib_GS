@@ -24,6 +24,9 @@ Uses Common, IntegerMath, MemoryMgr, MenuMgr;
 USES EZConst;
 
 Type 
+    GSOSInStringHandle = ^GSOSInStringPtr;
+    GSOSOutStringHandle = ^GSOSOutStringPtr;
+
     { FilenameString is a GSOS output string that can be used for getting     }
     { filenames from GSOS.  Remember to preset the ILength field with a value }
     { of 32.                                                                  }
