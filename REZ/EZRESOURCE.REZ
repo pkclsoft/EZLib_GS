@@ -1,4 +1,143 @@
-#include "rez/EZTypes.rez"
+#include "types.rez"
+
+    /* ------------------   Resource Definitions   ------------------ */
+
+#define rListIcon           $0001
+#define rListPattern        $0002
+#define rProductTitle       $0003
+#define rProductDetails     $0004
+#define rSerialNumber       $0005
+#define rPreferences        $0006
+#define rLicenseDetails     $0007
+#define rAppSpecific        $0008
+
+type rListIcon {
+        hex integer;        /* Icon type bit 15  1 = colour,
+                                                 0 = mono */
+
+image:
+        integer = (Mask-Image) / 8 - 6;  /* Size of icon data in bytes */
+        integer;                         /* Height of icon in pixels   */
+        integer;                         /* Width of icon in pixels    */
+        hex string [$$Word(image)];      /* Icon image                 */
+mask:
+        hex string;
+};
+
+type rListPattern {
+        hex string [32];      /* Pattern image                 */
+};
+
+#define EZCopyrightSymbal       "\$a9"
+
+type rProductTitle {
+st:
+        integer = (en-st) / 8 - 2;
+
+        string = TBStyleBold;
+        string = TBCenterJust;
+        string = TBFont;
+        string = TBHelvetica;
+        byte = 0x01;            /* 12 point */
+        byte = 12;
+        string;
+        string = TBFont;
+        string = TBHelvetica;
+        byte = 0x01;            /* 10 point */
+        byte = 10;
+        string = TBStylePlain;
+        string;
+en:
+};
+
+type rProductDetails {
+    pstring;
+    integer = 0x0000;
+st:
+    integer = (en-st) / 8 - 2;
+    string;
+en:
+    pstring;
+    longint;
+};
+
+type rSerialNumber {
+    pstring;
+};
+
+type rLicenseDetails {
+        integer;        /* Copies done */
+        string;         /* Password (encrypted) */
+};
+
+    /* ------------------   File Types   -------------------  */
+
+#define UnknownFileType           $00
+#define BadBlocksFile             $01
+#define TextFile                  $04
+#define BinaryFile                $06
+#define DoubleHIRESFile           $08
+#define DirectoryFile             $0f
+#define AppleworksDataBase        $19
+#define AppleworksWordProcessor   $1a
+#define AppleworksSpreadsheet     $1b
+#define WordProcessorFile         $50
+#define SpreadsheetFile           $51
+#define DataBaseFile              $52
+#define ObjectOrientedGraphics    $53
+#define DesktopPublishingFile     $54
+#define HypermediaFile            $55
+#define EducationalDataFile       $56
+#define StationaryFile            $57
+#define HelpFile                  $58
+#define CommunicationsFile        $59
+#define ApplicationConfigFile     $5a
+#define GSBasicProgram            $ab
+#define GSBasicToolbox            $ac
+#define GSBasicData               $ad
+#define SourceFile                $b0
+#define ObjectFile                $b1
+#define LibraryFile               $b2
+#define GSOSApplication           $b3
+#define GSOSRunTimeLibrary        $b4
+#define GSOSShellApplication      $b5
+#define GSOSPermanentInitFile     $b6
+#define IIGSTemporaryInitFile     $b7
+#define IIGSNewDeskAccessory      $b8
+#define ClassicDeskAccessory      $b9
+#define ToolFile                  $ba
+#define DeviceDriverFile          $bb
+#define GenericLoadFile           $bc
+#define FileSystemTranslator      $bd
+#define IIGSSoundFile             $bf
+#define IIGSSuperHIRESImageFile   $c0
+#define IIGSSuperHIRESPicture     $c1
+#define IIGSFontFile              $c8
+#define FinderDataFile            $c9
+#define FinderIconFile            $ca
+#define MusicFile                 $d5
+#define InstrumentFile            $d6
+#define MIDIFile                  $d7
+#define CommunicationsLibrary     $e0
+#define AppleTalkFile             $e2
+#define PascalPartition           $ef
+#define CommandFile               $f0
+#define GSOSSystemFile            $f9
+#define IntegerBasicProgramFile   $fa
+#define IntegerBasicVariables     $fb
+#define ApplesoftProgramFile      $fc
+#define ApplesoftVariableFile     $fd
+#define EDASMRelocatableFile      $fe
+#define Prodos8Application        $ff
+#define FileServerType            $fff5
+#define CDRom                     $fff8
+#define Drive525                  $fff9
+#define RamDrive                  $fffa
+#define Disk35                    $fffb
+#define Disk525                   $fffc
+#define HardDrive                 $fffd
+
+#define CautionIcon               $0001
 
     /* ------------------   File Type Icons   ------------------ */
 

@@ -6,3 +6,4 @@ end
 
 copy -C obj/ezlib 13/
 copy -C int/=.int 13/EZLibDefs
+copy -C rez/ezresource.rez 13/EZLibDefs
