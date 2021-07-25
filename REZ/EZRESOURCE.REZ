@@ -1,4 +1,4 @@
-#include "rez/EZTypes.rez"
+#include "13/EZLibDefs/EZTypes.rez"
 
     /* ------------------   File Type Icons   ------------------ */
 

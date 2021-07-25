@@ -12,8 +12,43 @@ obj/ezlib obj/ezconst.a     obj/ezmisc.a      obj/ezstring.a
         makelibiigs -l obj/ezlib -r obj/ezalerts.a    obj/ezdisk.a      obj/ezdates.a
         makelibiigs -l obj/ezlib -r obj/eztools.a     obj/ezmenu.a      obj/ezlist.a
         makelibiigs -l obj/ezlib -r obj/ezcrypt.a     obj/ezasm.a       obj/ezasm.root
-        makelibiigs -l obj/ezlib -r obj/ezcmdline.a   obj/ezdebug.a
+        makelibiigs -l obj/ezlib -r obj/ezcmdline.a   obj/ezdebug.a     obj/ezlist.a
      }
+
+; Test applications
+;
+; ctest is a simple console app to test the EZCrypt unit.
+;
+ctest
+    pas/ctest.pas
+    obj/ezlib
+        {   assemble pas/ctest.pas
+            link ctest obj/ezlib keep=ctest
+            move -c ctest.a obj
+            move -c ctest.root obj }
+
+; testctl is a simple desktop app that can be used to see and test the various
+; desktop control functions provided by the library.
+;
+testctl
+    pas/testctl.pas
+    obj/ezlib
+        {   assemble pas/testctl.pas
+            link testctl obj/ezlib keep=testctl
+            assemble rez/ezresource.rez keep=testctl
+            move -c testctl.a obj
+            move -c testctl.root obj }
+
+; TestTrans is a console app that was the original prototype for what became
+; the EZTranslateName function inside EZDisk.unit.
+;
+testtrans
+    pas/testtrans.pas
+    obj/ezlib
+        {   assemble pas/testtrans.pas
+            link testtrans obj/ezlib keep=testtrans
+            move -c testtrans.a obj
+            move -c testtrans.root obj }
 
 obj/ezconst.a
     unit/ezconst.unit
@@ -108,12 +143,12 @@ obj/ezlist.a
                             move -c ezlist.a obj }
 
 obj/ezcrypt.a
-    unit/ezcrypt.unit   {   compile unit/ezcrypt.unit 
+    unit/ezcrypt.unit {   compile unit/ezcrypt.unit 
                             move -c ezcrypt.int int
                             move -c ezcrypt.a obj }
 
 obj/ezdebug.a
-    unit/ezdebug.unit   {   compile unit/ezdebug.unit 
+    unit/ezdebug.unit {   compile unit/ezdebug.unit 
                             move -c ezdebug.int int
                             move -c ezdebug.a obj }
 

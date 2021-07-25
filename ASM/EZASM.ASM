@@ -11,6 +11,7 @@
          keep EZAsm
 
          mload asm/EZAsm.Macros
+         copy asm/E16.EZCONST
          copy 13/ainclude/e16.quickdraw
          copy 13/ainclude/e16.resources
 

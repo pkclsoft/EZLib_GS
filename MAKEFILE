@@ -11,7 +11,7 @@ obj/ezlib obj/ezconst.a     obj/ezmisc.a      obj/ezstring.a
         makelib obj/ezlib +obj/ezalerts.a    +obj/ezdisk.a      +obj/ezdates.a
         makelib obj/ezlib +obj/eztools.a     +obj/ezmenu.a      +obj/ezlist.a
         makelib obj/ezlib +obj/ezcrypt.a     +obj/ezasm.a       +obj/ezasm.root
-        makelib obj/ezlib +obj/ezcmdline.a   +obj/ezdebug.a
+        makelib obj/ezlib +obj/ezcmdline.a   +obj/ezdebug.a     +obj/ezlist.a
      }
 
 ; Test applications
@@ -48,7 +48,7 @@ testtrans
             link testtrans obj/ezlib keep=testtrans
             move -c testtrans.a obj
             move -c testtrans.root obj }
-
+ 		
 obj/ezconst.a
     unit/ezconst.unit
                         {   compile unit/ezconst.unit
@@ -142,12 +142,12 @@ obj/ezlist.a
                             move -c ezlist.a obj }
 
 obj/ezcrypt.a
-    unit/ezcrypt.unit   {   compile unit/ezcrypt.unit 
+    unit/ezcrypt.unit {   compile unit/ezcrypt.unit 
                             move -c ezcrypt.int int
                             move -c ezcrypt.a obj }
 
 obj/ezdebug.a
-    unit/ezdebug.unit   {   compile unit/ezdebug.unit 
+    unit/ezdebug.unit {   compile unit/ezdebug.unit 
                             move -c ezdebug.int int
                             move -c ezdebug.a obj }
 
