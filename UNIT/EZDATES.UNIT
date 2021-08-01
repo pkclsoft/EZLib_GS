@@ -35,17 +35,19 @@ CONST
     tfWeekday = 8;
 
 TYPE
+    DateTimeString  = packed array [0..32] of char;
+    
     DateRecord      = Record
                         Day             : Integer;
                         Month           : Integer;
                         Year            : Integer; { a four digit year }
-                        Date            : pString;
+                        Date            : DateTimeString;
                       end;
  
     TimeRecord      = Record
                         Minutes         : Integer;
                         Hours           : Integer;
-                        Time            : pString;
+                        Time            : DateTimeString;
                       end;
                       
     P8DateTime      = Record
@@ -287,17 +289,7 @@ begin
 end; { ConvSecondsToP8 }
 
 function GetSysDate;
-const
-    dateFormat  = $0034;
-    
-var
-    DateLayout  : Integer;
-    BatText     : pString;
-    SysTime     : TimeRecord;
-    SysDate     : DateRecord;
-    Tmp, Tmp1   : pString;
-    Tmp2, Tmp3  : pString;
-    
+var    
     secondsResult : longint;
 begin
 

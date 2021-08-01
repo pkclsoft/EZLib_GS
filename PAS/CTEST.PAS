@@ -14,7 +14,7 @@ var
 procedure disphex;
 var
     charindex   :   integer;
-    tmpstr      :   pString;
+    tmpstr      :   HexString;
     column      :   integer;
     line        :   integer;
 begin

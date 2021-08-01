@@ -83,7 +83,9 @@ Type
  
     patternHandle   =   ^patternPtr;
 
-
+    HexString       = packed array [0..4] of char;
+    pHexString      = ^HexString;
+    
 {----------------------------------------------------------------------------}
 { Hex  A procedure to convert a long integer to a hexadecimal pascal string, }
 { ~~~  with the number of digits specified by Digits.                        }
@@ -91,7 +93,7 @@ Type
 
 Procedure Hex(    DecValue  : LongInt;
                   Digits    : Integer;
-              var OutString : pString);
+              var OutString : HexString);
 
 {----------------------------------------------------------------------------}
 { RIndex  A function similar to POS, except that it searches the string in a }
@@ -99,7 +101,7 @@ Procedure Hex(    DecValue  : LongInt;
 { character.                                                                 }
 {----------------------------------------------------------------------------}
 
-Function RIndex(InString   : pSTring;
+Function RIndex(InString   : pString;
                 InChar     : char)     : integer;
 
 {----------------------------------------------------------------------------}

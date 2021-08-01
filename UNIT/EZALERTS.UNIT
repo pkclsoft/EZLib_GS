@@ -45,28 +45,26 @@ implementation
 
 Function  ProdosError;
 var
-    OurMsg      :   packed array [1..300] of char;
-    ErrText     :   pString;
+    OurMsg      :   textBlock;
     Junk        :   Integer;
     descrHandle :   handle;
-    textPtr     :   pStringPtr;
+    hexStr      :   HexString;
 begin
+    OurMsg := concat(Msg, chr(Return), chr(Return));
+
     descrHandle := LoadResource(rPString, ord4(ErrorCode + ord4(512)));
 
     If ToolError = 0
     then
         begin
-            textPtr := pStringPtr(descrHandle^);
-            ErrText := concat('Error: ', textPtr^);
+            OurMsg := concat(OurMsg, 'Error: ', pStringPtr(descrHandle)^);
         end
     else
         begin
-            Hex(ErrorCode, 4, ErrText);
-            ErrText := concat('Error code: $', ErrText);
+            Hex(ErrorCode, 4, hexStr);
+            OurMsg := concat(OurMsg, 'Error code: $', hexStr);
         end;
  
-    OurMsg := concat(Msg, chr(Return), chr(Return), ErrText);
-
     If not NoOption then
         OurMsg := concat(OurMsg, chr(Return), chr(Return), 'Please select your ',
                          'course of action.');
