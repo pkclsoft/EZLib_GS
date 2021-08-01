@@ -1,4 +1,4 @@
-﻿# Apple IIGS GS/OS Utility Library
+# Apple IIGS GS/OS Utility Library
 
 This is a library of code I build back in the late 80's, early 90's when I was build my application EZBackup (for which I'll make the code available on GitHub when it's ready).
 
@@ -44,6 +44,13 @@ So, once you have the files from the repository on your IIGS (or emulator), with
 
     filetype makefile src
     filetype clean src 6
+
+## Dependencies
+EZLib, being an ORCA/Pascal library of code depends of course on the Tool.Interface provided with ORCA/Pascal.  Additionally, as EZLib was being tuned and updated on GitHub, some minor changes to the Tool.Interface code were needed in ORCA/Pascal.
+
+To this end, a pull request was created and subsequently merged into the [ORCA/Pascal](https://github.com/byteworksinc/ORCA-Pascal) repository on GitHub.
+
+Before you try to build and use EZLib, it is recommended that you take the latest Tool.Interface code from GitHub, and rebuild it using the supplied "Build" script.
 
 ## Building
 To build the library, you will need the ORCA/M environment present, and you will need the "MK" tool, also available [here on GitHub](https://github.com/pkclsoft/MK).
