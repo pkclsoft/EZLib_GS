@@ -62,11 +62,9 @@ With the ezlib repo downloaded and in place, and the MK tool built and installed
 If all goes well, the library will be built and created as obj/ezlib, and three test applications will be created; ctest, testctl, and testtrans.
 
 ## Installing
-Once the library is built, if you want to use it, the easiest thing to do is copy it and the compiled interface files to the ORCA 13/  prefix where all of the other libraries are.
+Once the library is built, if you want to use it, the easiest thing to do is copy it and the compiled interface files to the ORCA 13/  prefix where all of the other libraries are.  To do this just use the included script:
 
-    copy obj/ezlib 13/
-    create 13/ezlibdefs
-    copy int/=.int 13/ezlibdefs
+    updatelib
 
 Now, when you're working on your own application using ezlib, make sure that libPrefix is set to 13/ezlibdefs when you want your code to see the interface files.
 
